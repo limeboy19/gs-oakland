@@ -1,0 +1,12 @@
+.grid-overlay {
+background-color: #ffffff;
+background-image:
+    linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
+    linear-gradient(to right, #e8e8e8 1px, transparent 1px),
+    linear-gradient(to bottom, #e8e8e8 1px, transparent 1px);
+background-size: cover, 55px 55px, 55px 55px;
+}
+
+.my-button-class {
+    pointer-events: none;
+}
