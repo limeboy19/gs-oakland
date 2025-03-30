@@ -7,8 +7,11 @@ export async function afterUpdateRichContent(item, context) {
   console.log("afterUpdate triggered for RichContent:", item);
 
   try {
+    if (!item.title) throw new Error("Missing title on item");
+
     const result = await wixData.query("MasterHubAutomated")
       .eq("title", item.title)
+      .limit(1)
       .suppressAuth()
       .find();
 
@@ -44,10 +47,7 @@ export async function afterInsertRichContent(item, context) {
   console.log("afterInsert triggered for RichContent:", item);
 
   try {
-    const result = await wixData.query("MasterHubAutomated")
-      .eq("title", item.title)
-      .suppressAuth()
-      .find();
+    if (!item.title) throw new Error("Missing title on item");
 
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
@@ -60,15 +60,8 @@ export async function afterInsertRichContent(item, context) {
       referenceId: item._id
     };
 
-    if (result.items.length > 0) {
-      const masterItem = result.items[0];
-      syncedFields._id = masterItem._id;
-      await wixData.update("MasterHubAutomated", syncedFields, authOptions);
-      console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
-    } else {
-      await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
-      console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
-    }
+    await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
+    console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
 
   } catch (error) {
     console.error("Error in afterInsert hook:", error);
