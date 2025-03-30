@@ -91,3 +91,19 @@ async function logError(location, error) {
     console.error("Failed to log error to logs collection:", logError);
   }
 }
+
+import { afterInsertRichContent } from 'backend/hooks/RichContent.js';
+
+export async function testAfterInsert() {
+  const fakeItem = {
+    title: "Sample Test Title",
+    categories: ["Education"],
+    resourceType: "Video",
+    description: "This is a test insert.",
+    "link-rich-content-title": "test-content-title",
+    _id: "test-id-123" // simulate _id if your logic needs it
+  };
+
+  const result = await afterInsertRichContent(fakeItem, {});
+  return result;
+}
