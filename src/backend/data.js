@@ -4,14 +4,14 @@ import { log } from 'wix-logging';
 
 let authOptions = { suppressAuth: true };
 
-export async function afterInsert_RichContent(item, context, authOptions) {
+export async function RichContent_afterInsert(item, context, authOptions) {
   log.info("afterInsert_RichContent triggered", item );
   console.log("are we hitting this?");
   afterInsertRichContent(fullItem, context, authOptions);
 
 }
 
-export async function afterUpdate_RichContent(item, context, authOptions) {
+export async function RichContent_afterUpdate(item, context, authOptions) {
   log.info("afterUpdate_RichContent triggered", { data: item });
   afterUpdateRichContent(fullItem, authOptions);
   

@@ -23,12 +23,12 @@ export async function afterUpdateRichContent(item) {
     const textURL = baseURL + item["link-rich-content-title"];
 
     const updatedFields = {
-      _id: masterItem._id,
-      categories: item.categories,
-      resourceType: item.resourceType,
-      description: item.description,
+      _id: masterItem?._id,
+      categories: item?.categories,
+      resourceType: item?.resourceType,
+      description: item?.description,
       link: textURL,
-      referenceId: item._id
+      referenceId: item?._id
     };
 
     await wixData.update("MasterHubAutomated", updatedFields, authOptions);
@@ -50,12 +50,12 @@ export async function afterInsertRichContent(item) {
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
-      title: item.title,
-      categories: item.categories,
-      resourceType: item.resourceType,
-      description: item.description,
+      title: item?.title,
+      categories: item?.categories,
+      resourceType: item?.resourceType,
+      description: item?.description,
       link: textURL,
-      referenceId: item._id
+      referenceId: item?._id
     };
 
     await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
