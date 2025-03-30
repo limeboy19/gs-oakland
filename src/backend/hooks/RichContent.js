@@ -3,12 +3,11 @@ import wixData from 'wix-data';
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
 const authOptions = { suppressAuth: true };
 
-export async function afterUpdateRichContent(item, context) {
+export async function afterUpdateRichContent(item) {
   console.log("afterUpdate triggered for RichContent:", item);
 
   try {
-    if (!item.title) throw new Error("Missing title on item");
-
+    
     const result = await wixData.query("MasterHubAutomated")
       .eq("title", item.title)
       .limit(1)
@@ -43,12 +42,11 @@ export async function afterUpdateRichContent(item, context) {
   return item;
 }
 
-export async function afterInsertRichContent(item, context) {
+export async function afterInsertRichContent(item) {
   console.log("afterInsert triggered for RichContent:", item);
 
   try {
-    if (!item.title) throw new Error("Missing title on item");
-
+    
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
