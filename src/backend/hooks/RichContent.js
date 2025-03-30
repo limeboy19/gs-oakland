@@ -92,7 +92,6 @@ async function logError(location, error) {
   }
 }
 
-import { afterInsertRichContent } from 'backend/hooks/RichContent.js';
 
 export async function testAfterInsert() {
   const fakeItem = {
