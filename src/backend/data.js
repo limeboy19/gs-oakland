@@ -5,13 +5,10 @@ import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/Ri
 let authOptions = { suppressAuth: true };
 
 export async function RichContent_afterInsert_(item) {
+  console.log("Emil testing");
   console.log("afterInsert_RichContent triggered", item);
-
-  try {
-    await afterInsertRichContent(item);
-  } catch (err) {
-    console.error("Error in afterInsertRichContent:", err);
-  }
+  await afterInsertRichContent(item,authOptions);
+  
 }
 
 export async function RichContent_afterUpdate(item, context, authOptions) {
