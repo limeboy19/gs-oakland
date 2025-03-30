@@ -7,15 +7,11 @@ let authOptions = { suppressAuth: true };
 export async function RichContent_afterInsert_(item) {
   console.log("afterInsert_RichContent triggered", item);
 
-  const fullItem = await wixData.get("RichContent", item._id, authOptions);
-
   try {
-    await afterInsertRichContent(fullItem);
+    await afterInsertRichContent(item);
   } catch (err) {
     console.error("Error in afterInsertRichContent:", err);
   }
-
-  return fullItem;
 }
 
 export async function RichContent_afterUpdate(item, context, authOptions) {
