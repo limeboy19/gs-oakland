@@ -1,4 +1,3 @@
-// backend/data.js
 import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/RichContent.js';
 import wixDataHooks from 'wix-data';
 
