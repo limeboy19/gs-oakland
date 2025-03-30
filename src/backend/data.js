@@ -4,7 +4,7 @@ import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/Ri
 
 let authOptions = { suppressAuth: true };
 
-export async function afterInsert_RichContent(item) {
+export async function RichContent_afterInsert_(item) {
   console.log("afterInsert_RichContent triggered", item);
 
   const fullItem = await wixData.get("RichContent", item._id, authOptions);
