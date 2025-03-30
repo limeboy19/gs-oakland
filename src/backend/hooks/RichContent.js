@@ -1,6 +1,7 @@
-import wixData from 'wix-data'
+import wixData from 'wix-data';
 
-let baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
+const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
+const authOptions = { suppressAuth: true };
 
 export async function afterUpdateRichContent(item, context) {
   console.log("afterUpdate triggered for RichContent:", item);
@@ -8,6 +9,7 @@ export async function afterUpdateRichContent(item, context) {
   try {
     const result = await wixData.query("MasterHubAutomated")
       .eq("title", item.title)
+      .suppressAuth()
       .find();
 
     if (result.items.length === 0) {
@@ -16,7 +18,7 @@ export async function afterUpdateRichContent(item, context) {
     }
 
     const masterItem = result.items[0];
-    let textURL = baseURL + item["link-rich-content-title"];
+    const textURL = baseURL + item["link-rich-content-title"];
 
     const updatedFields = {
       _id: masterItem._id,
@@ -27,7 +29,7 @@ export async function afterUpdateRichContent(item, context) {
       referenceId: item._id
     };
 
-    await wixData.update("MasterHubAutomated", updatedFields);
+    await wixData.update("MasterHubAutomated", updatedFields, authOptions);
     console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
 
   } catch (error) {
@@ -44,9 +46,10 @@ export async function afterInsertRichContent(item, context) {
   try {
     const result = await wixData.query("MasterHubAutomated")
       .eq("title", item.title)
+      .suppressAuth()
       .find();
 
-    let textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+    const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
       title: item.title,
@@ -60,10 +63,10 @@ export async function afterInsertRichContent(item, context) {
     if (result.items.length > 0) {
       const masterItem = result.items[0];
       syncedFields._id = masterItem._id;
-      await wixData.update("MasterHubAutomated", syncedFields);
+      await wixData.update("MasterHubAutomated", syncedFields, authOptions);
       console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
     } else {
-      await wixData.insert("MasterHubAutomated", syncedFields);
+      await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
       console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
     }
 
@@ -86,12 +89,11 @@ async function logError(location, error) {
   };
 
   try {
-    await wixData.insert("logs", logEntry);
+    await wixData.insert("logs", logEntry, authOptions);
   } catch (logError) {
     console.error("Failed to log error to logs collection:", logError);
   }
 }
-
 
 export async function testAfterInsert() {
   const fakeItem = {
@@ -100,7 +102,7 @@ export async function testAfterInsert() {
     resourceType: "Video",
     description: "This is a test insert.",
     "link-rich-content-title": "test-content-title",
-    _id: "test-id-123" // simulate _id if your logic needs it
+    _id: "test-id-123"
   };
 
   const result = await afterInsertRichContent(fakeItem, {});
