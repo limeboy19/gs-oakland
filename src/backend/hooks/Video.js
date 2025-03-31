@@ -18,6 +18,7 @@ export async function afterInsertVideo(partialItem) {
         title: item.title,
         description: item.description,
         coverImage: item.coverImage,
+        resourceType: 'd3008b3f-b2d5-45fa-890f-d21a2cfaaa70',
         link: textURL,
         referenceId: item._id
       }, authOptions);
@@ -45,7 +46,6 @@ export async function afterUpdateVideo(partialItem) {
     const videoResult = await wixData.query("Video")
       .eq("_id", partialItem._id)
       .include("categories")
-      .limit(1)
       .find(authOptions);
 
     const item = videoResult.items[0];
@@ -55,6 +55,7 @@ export async function afterUpdateVideo(partialItem) {
     }
 
     const categoryIds = (item.categories || []).map(c => c._id);
+    console.log("Category IDs:", categoryIds);
     const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
 
     const hubResult = await wixData.query("MasterHubAutomated")
@@ -75,6 +76,7 @@ export async function afterUpdateVideo(partialItem) {
       description: item.description,
       coverImage: item.coverImage || null,
       link: textURL,
+      resourceType: 'd3008b3f-b2d5-45fa-890f-d21a2cfaaa70',
       referenceId: item._id
     }, authOptions);
 
