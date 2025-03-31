@@ -37,8 +37,6 @@ export async function afterInsertVideo(partialItem) {
     return partialItem;
   }
 
-  import wixData from 'wix-data';
-
 
 export async function afterUpdateVideo(partialItem) {
   console.log("afterUpdate triggered for Video:", partialItem);
