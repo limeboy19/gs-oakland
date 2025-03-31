@@ -47,7 +47,7 @@ export async function afterInsertRichContent(partialItem) {
   try {
     const result = await wixData.query("RichContent")
       .eq("_id", partialItem._id)
-      .include("categories", "resourceType")
+      .include("categories")")
       .suppressAuth()
       .find();
 
@@ -59,7 +59,6 @@ export async function afterInsertRichContent(partialItem) {
     const syncedFields = {
       title: item.title,
       categories: item.categories.map(c => c._id),
-      resourceType: item.resourceType?._id,
       description: item.description,
       link: textURL,
       referenceId: item._id
