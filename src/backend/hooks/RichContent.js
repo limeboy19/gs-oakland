@@ -44,31 +44,35 @@ export async function afterUpdateRichContent(item) {
 
 
 export async function afterInsertRichContent(partialItem) {
-    try {
-      const item = await wixData.get("RichContent", partialItem._id, authOptions);
+  try {
+    const item = await wixData.get("RichContent", partialItem._id, {
+      ...authOptions,
+      include: ["categories", "resourceType"]
+    });
 
-      console.log("Final item?", item);
-  
-      const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
-  
-      const syncedFields = {
-        title: item.title,
-        categories: item.categories, 
-        resourceType: item.resourceType,
-        description: item.description,
-        link: textURL,
-        referenceId: item._id
-      };
-  
-      await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
-      console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
-    } catch (error) {
-      console.error("Error in afterInsertRichContent:", error);
-      await logError("afterInsert - RichContent", error);
-    }
-  
-    
+    console.log("Final item?", item);
+
+    const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+
+    const syncedFields = {
+      title: item.title,
+      categories: item.categories, 
+      resourceType: item.resourceType, 
+      description: item.description,
+      link: textURL,
+      referenceId: item._id
+    };
+
+    await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
+    console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
+  } catch (error) {
+    console.error("Error in afterInsertRichContent:", error);
+    await logError("afterInsert - RichContent", error);
   }
+
+  return partialItem;
+}
+
   
 
 async function logError(location, error) {
