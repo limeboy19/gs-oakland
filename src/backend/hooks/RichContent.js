@@ -45,32 +45,36 @@ export async function afterUpdateRichContent(item) {
 
 export async function afterInsertRichContent(partialItem) {
   try {
-   
-    await new Promise(resolve => setTimeout(resolve, 250));
+    const result = await wixData.query("RichContent")
+      .eq("_id", partialItem._id)
+      .include("categories", "resourceType")
+      .suppressAuth()
+      .find();
 
-    const item = await wixData.get("RichContent", partialItem._id, authOptions);
-    console.log("Final item?", item); // should now include categories/resourceType IDs
+    const item = result.items[0];
+    console.log("Final item?", item);
 
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
       title: item.title,
-      categories: item.categories,       
-      resourceType: item.resourceType,   
+      categories: item.categories.map(c => c._id),
+      resourceType: item.resourceType?._id,
       description: item.description,
       link: textURL,
       referenceId: item._id
     };
 
     await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
-    console.log(`Inserted new item into MasterHubAutomated for title: ${item.title}`);
+    console.log(`✅ Inserted into MasterHubAutomated with full reference IDs`);
   } catch (error) {
-    console.error("Error in afterInsertRichContent:", error);
+    console.error("❌Error in afterInsertRichContent:", error);
     await logError("afterInsert - RichContent", error);
   }
 
   return partialItem;
 }
+
 
 
   
