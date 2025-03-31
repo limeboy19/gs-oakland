@@ -47,7 +47,7 @@ export async function afterInsertRichContent(partialItem) {
   try {
     const result = await wixData.query("RichContent")
       .eq("_id", partialItem._id)
-      .include("categories")")
+      .include("categories")
       .suppressAuth()
       .find();
 
@@ -67,7 +67,7 @@ export async function afterInsertRichContent(partialItem) {
     await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
     console.log(`✅ Inserted into MasterHubAutomated with full reference IDs`);
   } catch (error) {
-    console.error("❌Error in afterInsertRichContent:", error);
+    console.error("Error in afterInsertRichContent:", error);
     await logError("afterInsert - RichContent", error);
   }
 
