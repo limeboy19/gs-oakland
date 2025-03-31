@@ -1,7 +1,8 @@
 import wixData from 'wix-data';
 
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
-const authOptions = { suppressAuth: true };
+const authOptions = { suppressAuth: true, suppressHooks: true };
+
 
 export async function afterInsertVideo(partialItem) {
     try {
