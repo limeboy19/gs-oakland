@@ -43,8 +43,8 @@ export async function afterUpdateVideo(partialItem) {
   console.log("afterUpdate triggered for Video:", partialItem);
 
   try {
-    await new Promise(res => setTimeout(res, 600));
-    
+    await new Promise(res => setTimeout(res, 3000));
+
     const videoResult = await wixData.query("Video")
       .eq("_id", partialItem._id)
       .include("categories")
