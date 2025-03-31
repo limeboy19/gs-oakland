@@ -45,24 +45,35 @@ export async function afterUpdateRichContent(partialItem) {
 
     await new Promise((res) => setTimeout(res, 200)); // give Wix time to commit
 
-    if (categoryIds.length > 0) {
-      await wixData.replaceReferences(
-        "MasterHubAutomated",
-        "categories",
-        masterItem._id,
-        categoryIds,
-        authOptions
-      );
-      console.log(`Replaced category references for item: ${masterItem._id}`);
-    } else {
-      await wixData.replaceReferences(
-        "MasterHubAutomated",
-        "categories",
-        masterItem._id,
-        [],
-        authOptions
-      );
-      console.log(`Cleared category references for item: ${masterItem._id}`);
+    // Step 4: Remove and re-insert category references
+    try {
+      const current = await wixData.get("MasterHubAutomated", masterItem._id, authOptions);
+      const existingCategoryIds = current.categories?.map(c => c._id) || [];
+
+      if (existingCategoryIds.length > 0) {
+        await wixData.removeReference(
+          "MasterHubAutomated",
+          "categories",
+          masterItem._id,
+          existingCategoryIds,
+          authOptions
+        );
+        console.log(`Removed existing category references for item: ${masterItem._id}`);
+      }
+
+      if (categoryIds.length > 0) {
+        await wixData.insertReference(
+          "MasterHubAutomated",
+          "categories",
+          masterItem._id,
+          categoryIds,
+          authOptions
+        );
+        console.log(`Inserted updated category references for item: ${masterItem._id}`);
+      }
+
+    } catch (refError) {
+      console.error("Error syncing category references:", refError);
     }
 
   } catch (error) {
@@ -72,7 +83,6 @@ export async function afterUpdateRichContent(partialItem) {
 
   return partialItem;
 }
-
 
 
 export async function afterInsertRichContent(partialItem) {
