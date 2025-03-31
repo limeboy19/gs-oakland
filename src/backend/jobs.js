@@ -6,6 +6,7 @@ export async function syncVideoCategories() {
       const results = await wixData.query("Video")
         .eq("needsCategorySync", true)
         .limit(100)
+        .include("categories")
         .find(authOptions);
   
       console.log(`🔍 Found ${results.items.length} video(s) needing sync`);
