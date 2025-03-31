@@ -53,18 +53,21 @@ export async function afterInsertRichContent(partialItem) {
     const item = result.items[0];
     console.log("Final item?", item);
 
+    const categoryIds = item.categories.map(c => c._id);
+    console.log("Category IDs being inserted:", categoryIds);
+
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
       title: item.title,
-      categories: item.categories,
+      categories: categoryIds,
       description: item.description,
       link: textURL,
       referenceId: item._id
     };
 
     await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
-    console.log(`✅ Inserted into MasterHubAutomated with full reference IDs`);
+    console.log(`Inserted into MasterHubAutomated with full reference IDs`);
   } catch (error) {
     console.error("Error in afterInsertRichContent:", error);
     await logError("afterInsert - RichContent", error);
