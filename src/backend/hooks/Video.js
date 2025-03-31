@@ -54,6 +54,8 @@ export async function afterUpdateVideo(partialItem) {
       return partialItem;
     }
 
+    console.log("item data!", item);
+
     const categoryIds = (item.categories || []).map(c => (typeof c === 'object' ? c._id : c));
     console.log("Category IDs:", categoryIds);
 
