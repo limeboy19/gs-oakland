@@ -126,6 +126,7 @@ async function logError(location, error) {
   }
 }
 
+//USE THIS TO TEST AN INSERT VIA CODE
 export async function testAfterInsert() {
   const fakeItem = {
     title: "Sample Test Title",
@@ -140,6 +141,7 @@ export async function testAfterInsert() {
   return result;
 }
 
+//USE THIS TO SYNC IF NEEDED//
 export async function syncAllRichContentToMasterHub() {
   try {
     const pageSize = 100; // adjust if needed
