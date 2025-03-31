@@ -41,18 +41,19 @@ export async function afterInsertVideo(partialItem) {
     console.log("afterUpdate triggered for Video:", partialItem);
   
     try {
-      // Get full item with references
+      // Step 1: Get full Video item with categories
       const result = await wixData.query("Video")
         .eq("_id", partialItem._id)
         .include("categories")
         .limit(1)
         .find(authOptions);
   
-      const item = result.items[0];
-      const categoryIds = item.categories?.map(c => c._id) || [];
-      const textURL = `${baseURL}/${item["link-video-title"]}`;
+      const item = result.items[0] || {};
+      const categories = Array.isArray(item.categories) ? item.categories : [];
+      const categoryIds = categories.map(c => c._id).filter(Boolean);
+      const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
   
-      // Find existing MasterHubAutomated entry
+      // Step 2: Find corresponding MasterHubAutomated record
       const hubResult = await wixData.query("MasterHubAutomated")
         .eq("referenceId", item._id)
         .limit(1)
@@ -65,24 +66,22 @@ export async function afterInsertVideo(partialItem) {
   
       const masterItem = hubResult.items[0];
   
-      // Update fields
+      // Step 3: Update main fields
       const updatedFields = {
         _id: masterItem._id,
-        title: item.title,
-        description: item.description,
-        coverImage: item.coverImage,
+        title: item.title || "",
+        description: item.description || "",
+        coverImage: item.coverImage || null,
         link: textURL,
         referenceId: item._id
       };
   
-      // Update item first
       await wixData.update("MasterHubAutomated", updatedFields, authOptions);
       console.log(`Updated MasterHubAutomated item: ${masterItem._id}`);
   
-      // Ensure update is committed before replacing references
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((res) => setTimeout(res, 300)); // allow commit to finish
   
-      // Replace references
+      // Step 4: Replace category references
       await wixData.replaceReferences(
         "MasterHubAutomated",
         "categories",
@@ -90,7 +89,6 @@ export async function afterInsertVideo(partialItem) {
         categoryIds,
         authOptions
       );
-  
       console.log(`Replaced category references for Video: ${item.title}`);
   
     } catch (error) {
@@ -100,6 +98,7 @@ export async function afterInsertVideo(partialItem) {
   
     return partialItem;
   }
+  
   
 
   export async function syncAllVideosToMasterHub() {
