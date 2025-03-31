@@ -3,44 +3,65 @@ import wixData from 'wix-data';
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
 const authOptions = { suppressAuth: true };
 
-export async function afterUpdateRichContent(item) {
-  console.log("afterUpdate triggered for RichContent:", item);
+export async function afterUpdateRichContent(partialItem) {
+  console.log("afterUpdate triggered for RichContent:", partialItem);
 
   try {
-    
-    const result = await wixData.query("MasterHubAutomated")
-      .eq("title", item.title)
-      .limit(1)
-      .suppressAuth()
-      .find();
+    // Step 1: Get full RichContent item with categories
+    const richContentResult = await wixData.query("RichContent")
+      .eq("_id", partialItem._id)
+      .include("categories")
+      .find(authOptions);
 
-    if (result.items.length === 0) {
-      console.log(`No matching item found in MasterHubAutomated for title: ${item.title}`);
+    const item = richContentResult.items[0];
+    const categoryIds = item.categories.map(c => c._id);
+    const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+
+    // Step 2: Find corresponding MasterHubAutomated record
+    const hubResult = await wixData.query("MasterHubAutomated")
+      .eq("referenceId", item._id)
+      .limit(1)
+      .find(authOptions);
+
+    if (hubResult.items.length === 0) {
+      console.log(`No matching item found in MasterHubAutomated for referenceId: ${item._id}`);
       return item;
     }
 
-    const masterItem = result.items[0];
-    const textURL = baseURL + item["link-rich-content-title"];
+    const masterItem = hubResult.items[0];
 
+    // Step 3: Update main fields
     const updatedFields = {
-      _id: masterItem?._id,
-      categories: item?.categories,
-      resourceType: item?.resourceType,
-      description: item?.description,
+      _id: masterItem._id,
+      title: item.title,
+      description: item.description,
+      coverImage: item.image,
       link: textURL,
-      referenceId: item?._id
+      referenceId: item._id
     };
 
     await wixData.update("MasterHubAutomated", updatedFields, authOptions);
     console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
 
+    if (categoryIds.length > 0) {
+      await wixData.replaceReferences(
+        "MasterHubAutomated",
+        "categories",
+        masterItem._id,
+        categoryIds,
+        authOptions
+      );
+      console.log(`Replaced category references for item: ${masterItem._id}`);
+    }
+
   } catch (error) {
-    console.error("Error in afterUpdate hook:", error);
+    console.error("Error in afterUpdateRichContent:", error);
     await logError("afterUpdate - RichContent", error);
   }
 
-  return item;
+  return partialItem;
 }
+
 
 
 export async function afterInsertRichContent(partialItem) {
@@ -60,6 +81,7 @@ export async function afterInsertRichContent(partialItem) {
     const inserted = await wixData.insert("MasterHubAutomated", {
       title: item.title,
       description: item.description,
+      coverImage: item.image,
       link: textURL,
       referenceId: item._id
     }, authOptions);
@@ -86,11 +108,7 @@ export async function afterInsertRichContent(partialItem) {
   return partialItem;
 }
 
-
-
-
   
-
 async function logError(location, error) {
   const now = new Date();
   const logEntry = {
@@ -120,4 +138,46 @@ export async function testAfterInsert() {
 
   const result = await afterInsertRichContent(fakeItem, {});
   return result;
+}
+
+export async function syncAllRichContentToMasterHub() {
+  try {
+    const pageSize = 100; // adjust if needed
+    let results = await wixData.query("RichContent")
+      .include("categories")
+      .limit(pageSize)
+      .find(authOptions);
+
+    const items = results.items;
+
+    for (const item of items) {
+      const categoryIds = item.categories?.map(c => c._id) || [];
+      const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+
+      // Step 1: Insert item without multi-ref
+      const inserted = await wixData.insert("MasterHubAutomated", {
+        title: item.title,
+        description: item.description,
+        coverImage: item.image,
+        link: textURL,
+        referenceId: item._id
+      }, authOptions);
+
+      console.log(`Inserted MasterHubAutomated item for "${item.title}" → ${inserted._id}`);
+
+      // Step 2: Add references
+      if (categoryIds.length > 0) {
+        await wixData.insertReference("MasterHubAutomated", "categories", inserted._id, categoryIds, authOptions);
+        console.log(`Inserted category references for: ${item.title}`);
+      }
+    }
+
+    console.log("Sync complete for all RichContent items.");
+    return { success: true };
+
+  } catch (error) {
+    console.error(" Error in syncAllRichContentToMasterHub:", error);
+    await logError("syncAllRichContentToMasterHub", error);
+    return { success: false, error: String(error) };
+  }
 }
