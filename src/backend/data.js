@@ -1,6 +1,6 @@
 import wixData from 'wix-data';
 import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/RichContent.js';
-import { afterInsertVideo, afterUpdateVideo } from 'backend/hooks/RichContent.js';
+import { afterInsertVideo, afterUpdateVideo } from 'backend/hooks/Video.js';
 
 
 let authOptions = { suppressAuth: true };
