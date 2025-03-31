@@ -37,71 +37,70 @@ export async function afterInsertVideo(partialItem) {
     return partialItem;
   }
 
-  export async function afterUpdateVideo(partialItem) {
-    console.log("afterUpdate triggered for Video:", partialItem);
-  
-    try {
-      // Step 1: Get full Video item with categories
-      const videoResult = await wixData.query("Video")
-        .eq("_id", partialItem._id)
-        .include("categories")
-        .limit(1)
-        .find(authOptions);
-  
-      const item = videoResult.items[0];
-      if (!item) {
-        console.warn(`Video item not found for ID: ${partialItem._id}`);
-        return partialItem;
-      }
-  
-      const categoryIds = Array.isArray(item.categories) ? item.categories.map(c => c._id) : [];
-      const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
-  
-      // Step 2: Find existing MasterHubAutomated record
-      const hubResult = await wixData.query("MasterHubAutomated")
-        .eq("referenceId", item._id)
-        .limit(1)
-        .find(authOptions);
-  
-      if (hubResult.items.length === 0) {
-        console.log(`No matching MasterHubAutomated item found for Video ID: ${item._id}`);
-        return item;
-      }
-  
-      const masterItem = hubResult.items[0];
-  
-      // Step 3: Update main fields
-      const updatedFields = {
-        _id: masterItem._id,
-        title: item.title || "",
-        description: item.description || "",
-        coverImage: item.coverImage || null,
-        link: textURL,
-        referenceId: item._id
-      };
-  
-      await wixData.update("MasterHubAutomated", updatedFields, authOptions);
-      console.log(`Updated MasterHubAutomated item: ${masterItem._id}`);
-  
-      await new Promise(res => setTimeout(res, 300)); // Let Wix commit changes
-  
-      // Step 4: Replace multi-reference field
-      await wixData.replaceReferences(
-        "MasterHubAutomated",
-        "categories",
-        masterItem._id,
-        categoryIds,
-        authOptions
-      );
-      console.log(`Replaced category references for Video: ${item.title}`);
-  
-    } catch (error) {
-      console.error("Error in afterUpdateVideo:", error);
-      await logError("afterUpdate - Video", error);
+  import wixData from 'wix-data';
+
+
+export async function afterUpdateVideo(partialItem) {
+  console.log("afterUpdate triggered for Video:", partialItem);
+
+  try {
+    const videoResult = await wixData.query("Video")
+      .eq("_id", partialItem._id)
+      .include("categories")
+      .limit(1)
+      .find(authOptions);
+
+    const item = videoResult.items[0];
+    if (!item) {
+      console.warn(`Video not found for ID: ${partialItem._id}`);
+      return partialItem;
     }
-  
-    return partialItem;
+
+    const categoryIds = (item.categories || []).map(c => c._id);
+    const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
+
+    const hubResult = await wixData.query("MasterHubAutomated")
+      .eq("referenceId", item._id)
+      .limit(1)
+      .find(authOptions);
+
+    if (hubResult.items.length === 0) {
+      console.log(`No MasterHubAutomated match for Video ID: ${item._id}`);
+      return item;
+    }
+
+    const masterItem = hubResult.items[0];
+
+    await wixData.update("MasterHubAutomated", {
+      _id: masterItem._id,
+      title: item.title || "",
+      description: item.description,
+      coverImage: item.coverImage || null,
+      link: textURL,
+      referenceId: item._id
+    }, authOptions);
+
+    console.log(`Updated MasterHubAutomated: ${masterItem._id}`);
+
+    await new Promise(res => setTimeout(res, 300));
+
+    await wixData.replaceReferences(
+      "MasterHubAutomated",
+      "categories",
+      masterItem._id,
+      categoryIds,
+      authOptions
+    );
+    console.log(`Updated categories for: ${item.title}`);
+
+  } catch (error) {
+    console.error("Error in afterUpdateVideo:", error);
+    await logError("afterUpdate - Video", error);
   }
+
+  return partialItem;
+}
+
   
   
   
