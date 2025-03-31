@@ -57,7 +57,7 @@ export async function afterInsertRichContent(partialItem) {
 
     const syncedFields = {
       title: item.title,
-      categories: item.categories.map(c => c._id),
+      categories: item.categories,
       description: item.description,
       link: textURL,
       referenceId: item._id
