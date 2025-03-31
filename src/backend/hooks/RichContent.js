@@ -43,6 +43,8 @@ export async function afterUpdateRichContent(partialItem) {
     await wixData.update("MasterHubAutomated", updatedFields, authOptions);
     console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
 
+    await new Promise((res) => setTimeout(res, 200)); // give Wix time to commit
+
     if (categoryIds.length > 0) {
       await wixData.replaceReferences(
         "MasterHubAutomated",
@@ -52,6 +54,15 @@ export async function afterUpdateRichContent(partialItem) {
         authOptions
       );
       console.log(`Replaced category references for item: ${masterItem._id}`);
+    } else {
+      await wixData.replaceReferences(
+        "MasterHubAutomated",
+        "categories",
+        masterItem._id,
+        [],
+        authOptions
+      );
+      console.log(`Cleared category references for item: ${masterItem._id}`);
     }
 
   } catch (error) {
@@ -98,7 +109,7 @@ export async function afterInsertRichContent(partialItem) {
       );
       console.log(`Inserted category references for item: ${inserted._id}`);
     }
-    
+
 
   } catch (error) {
     console.error("Error in afterInsertRichContent:", error);
@@ -108,7 +119,7 @@ export async function afterInsertRichContent(partialItem) {
   return partialItem;
 }
 
-  
+
 async function logError(location, error) {
   const now = new Date();
   const logEntry = {
