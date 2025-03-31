@@ -54,8 +54,9 @@ export async function afterUpdateVideo(partialItem) {
       return partialItem;
     }
 
-    const categoryIds = (item.categories || []).map(c => c._id);
+    const categoryIds = (item.categories || []).map(c => (typeof c === 'object' ? c._id : c));
     console.log("Category IDs:", categoryIds);
+
     const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
 
     const hubResult = await wixData.query("MasterHubAutomated")

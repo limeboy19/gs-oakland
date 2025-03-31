@@ -36,6 +36,7 @@ export async function afterUpdateRichContent(partialItem) {
       title: item.title,
       description: item.description,
       coverImage: item.image,
+      resourceType: '6aea6b46-d208-4f63-b95d-cae0192b6826',
       link: textURL,
       referenceId: item._id
     };
@@ -103,6 +104,7 @@ export async function afterInsertRichContent(partialItem) {
       title: item.title,
       description: item.description,
       coverImage: item.image,
+      resourceType: '6aea6b46-d208-4f63-b95d-cae0192b6826',
       link: textURL,
       referenceId: item._id
     }, authOptions);
