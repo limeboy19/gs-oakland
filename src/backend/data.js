@@ -31,7 +31,7 @@ export async function Video_afterUpdate(item, context) {
 }
 
 export async function MasterHubAutomated_afterUpdate(item, context) {
-  console.log("afterUpdate_Video triggered", item);
+  console.log("afterUpdate_MasterHub triggered", item);
   syncVideoCategories();
 }
 
