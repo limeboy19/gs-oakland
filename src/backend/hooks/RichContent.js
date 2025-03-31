@@ -66,11 +66,17 @@ export async function afterInsertRichContent(partialItem) {
 
     console.log(`Inserted MasterHubAutomated item: ${inserted._id}`);
 
-    // Step 2: Link multi-reference field (categories)
     if (categoryIds.length > 0) {
-      await wixData.insertReference("MasterHubAutomated", inserted._id, "categories", categoryIds, authOptions);
+      await wixData.insertReference(
+        "MasterHubAutomated",
+        "categories",
+        inserted._id,
+        categoryIds,
+        authOptions
+      );
       console.log(`Inserted category references for item: ${inserted._id}`);
     }
+    
 
   } catch (error) {
     console.error("Error in afterInsertRichContent:", error);
