@@ -1,6 +1,9 @@
 import wixData from 'wix-data';
 import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/RichContent.js';
 import { afterInsertVideo, afterUpdateVideo } from 'backend/hooks/Video.js';
+import { syncVideoCategories } from 'backend/jobs.js';
+
+
 
 
 let authOptions = { suppressAuth: true };
@@ -24,6 +27,11 @@ export function Video_afterInsert(item, context) {
 
 export async function Video_afterUpdate(item, context) {
   console.log("afterUpdate_Video triggered", item);
-  await afterUpdateVideo(item, authOptions);
+   afterUpdateVideo(item, authOptions);
+}
+
+export async function MasterHubAutomated_afterUpdate(item, context) {
+  console.log("afterUpdate_Video triggered", item);
+  syncVideoCategories();
 }
 
