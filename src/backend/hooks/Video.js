@@ -42,18 +42,22 @@ export async function afterInsertVideo(partialItem) {
   
     try {
       // Step 1: Get full Video item with categories
-      const result = await wixData.query("Video")
+      const videoResult = await wixData.query("Video")
         .eq("_id", partialItem._id)
         .include("categories")
         .limit(1)
         .find(authOptions);
   
-      const item = result.items[0] || {};
-      const categories = Array.isArray(item.categories) ? item.categories : [];
-      const categoryIds = categories.map(c => c._id).filter(Boolean);
+      const item = videoResult.items[0];
+      if (!item) {
+        console.warn(`Video item not found for ID: ${partialItem._id}`);
+        return partialItem;
+      }
+  
+      const categoryIds = Array.isArray(item.categories) ? item.categories.map(c => c._id) : [];
       const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
   
-      // Step 2: Find corresponding MasterHubAutomated record
+      // Step 2: Find existing MasterHubAutomated record
       const hubResult = await wixData.query("MasterHubAutomated")
         .eq("referenceId", item._id)
         .limit(1)
@@ -79,9 +83,9 @@ export async function afterInsertVideo(partialItem) {
       await wixData.update("MasterHubAutomated", updatedFields, authOptions);
       console.log(`Updated MasterHubAutomated item: ${masterItem._id}`);
   
-      await new Promise((res) => setTimeout(res, 300)); // allow commit to finish
+      await new Promise(res => setTimeout(res, 300)); // Let Wix commit changes
   
-      // Step 4: Replace category references
+      // Step 4: Replace multi-reference field
       await wixData.replaceReferences(
         "MasterHubAutomated",
         "categories",
@@ -98,6 +102,7 @@ export async function afterInsertVideo(partialItem) {
   
     return partialItem;
   }
+  
   
   
 
