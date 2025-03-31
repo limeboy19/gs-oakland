@@ -39,76 +39,60 @@ export async function afterInsertVideo(partialItem) {
   }
 
 
-export async function afterUpdateVideo(partialItem) {
-  console.log("afterUpdate triggered for Video:", partialItem);
-
-  try {
-    await new Promise(res => setTimeout(res, 10000));
-
-    const videoResult = await wixData.query("Video")
-      .eq("_id", partialItem._id)
-      .include("categories")
-      .find(authOptions);
-
-    const item = videoResult.items[0];
-    if (!item) {
-      console.warn(`Video not found for ID: ${partialItem._id}`);
-      return partialItem;
+  export async function afterUpdateVideo(partialItem) {
+    console.log("afterUpdate triggered for Video:", partialItem);
+  
+    try {
+      const videoResult = await wixData.query("Video")
+        .eq("_id", partialItem._id)
+        .find(authOptions);
+  
+      const item = videoResult.items[0];
+      if (!item) {
+        console.warn(`Video not found for ID: ${partialItem._id}`);
+        return partialItem;
+      }
+  
+      const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
+  
+      const hubResult = await wixData.query("MasterHubAutomated")
+        .eq("referenceId", item._id)
+        .limit(1)
+        .find(authOptions);
+  
+      if (hubResult.items.length === 0) {
+        console.log(`No MasterHubAutomated match for Video ID: ${item._id}`);
+        return item;
+      }
+  
+      const masterItem = hubResult.items[0];
+  
+      await wixData.update("MasterHubAutomated", {
+        _id: masterItem._id,
+        title: item.title || "",
+        description: item.description,
+        coverImage: item.coverImage || null,
+        link: textURL,
+        resourceType: 'd3008b3f-b2d5-45fa-890f-d21a2cfaaa70',
+        referenceId: item._id
+      }, authOptions);
+  
+      console.log(`Updated MasterHubAutomated core fields: ${masterItem._id}`);
+  
+      // 👇 Flag for category sync (to be handled by background job)
+      await wixData.update("Video", {
+        _id: item._id,
+        needsCategorySync: true
+      }, authOptions);
+  
+    } catch (error) {
+      console.error("Error in afterUpdateVideo:", error);
+      await logError("afterUpdate - Video", error);
     }
-
-    console.log("item data!", item);
-
-    const categoryIds = (item.categories || []).map(c => (typeof c === 'object' ? c._id : c));
-    console.log("Category IDs:", categoryIds);
-
-    const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
-
-    const hubResult = await wixData.query("MasterHubAutomated")
-      .eq("referenceId", item._id)
-      .limit(1)
-      .find(authOptions);
-
-    if (hubResult.items.length === 0) {
-      console.log(`No MasterHubAutomated match for Video ID: ${item._id}`);
-      return item;
-    }
-
-    const masterItem = hubResult.items[0];
-
-    await wixData.update("MasterHubAutomated", {
-      _id: masterItem._id,
-      title: item.title || "",
-      description: item.description,
-      coverImage: item.coverImage || null,
-      link: textURL,
-      resourceType: 'd3008b3f-b2d5-45fa-890f-d21a2cfaaa70',
-      referenceId: item._id
-    }, authOptions);
-
-    console.log(`Updated MasterHubAutomated: ${masterItem._id}`);
-
-    await new Promise(res => setTimeout(res, 300));
-
-    await wixData.replaceReferences(
-      "MasterHubAutomated",
-      "categories",
-      masterItem._id,
-      categoryIds,
-      authOptions
-    );
-    console.log(`Updated categories for: ${item.title}`);
-
-  } catch (error) {
-    console.error("Error in afterUpdateVideo:", error);
-    await logError("afterUpdate - Video", error);
+  
+    return partialItem;
   }
-
-  return partialItem;
-}
-
-  
-  
-  
+    
 
   export async function syncAllVideosToMasterHub() {
     try {
