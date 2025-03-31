@@ -46,6 +46,8 @@ export async function afterUpdateRichContent(item) {
 export async function afterInsertRichContent(partialItem) {
     try {
       const item = await wixData.get("RichContent", partialItem._id, authOptions);
+
+      console.log("Final item?", item);
   
       const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
   
