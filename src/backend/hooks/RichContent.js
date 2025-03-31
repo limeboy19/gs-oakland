@@ -48,8 +48,7 @@ export async function afterInsertRichContent(partialItem) {
     const result = await wixData.query("RichContent")
       .eq("_id", partialItem._id)
       .include("categories")
-      .suppressAuth()
-      .find();
+      .find(authOptions);
 
     const item = result.items[0];
     console.log("Final item?", item);
