@@ -5,13 +5,15 @@ export async function syncVideoCategories() {
     try {
       const results = await wixData.query("Video")
         .eq("needsCategorySync", true)
-        .include("categories")
         .limit(100)
         .find(authOptions);
   
       for (const item of results.items) {
         try {
-          const categoryIds = (item.categories || []).map(c => (typeof c === 'object' ? c._id : c));
+          // Ensure categoryIds is a fresh array of IDs
+          const categoryIds = Array.isArray(item.categories)
+            ? item.categories.map(id => (typeof id === 'object' ? id._id : id))
+            : [];
   
           const hubResult = await wixData.query("MasterHubAutomated")
             .eq("referenceId", item._id)
@@ -25,6 +27,7 @@ export async function syncVideoCategories() {
   
           const masterItem = hubResult.items[0];
   
+          // This call replaces ALL category references — so it will drop the removed one
           await wixData.replaceReferences(
             "MasterHubAutomated",
             "categories",
@@ -46,7 +49,8 @@ export async function syncVideoCategories() {
     } catch (outerError) {
       await logError("syncVideoCategories - top level", outerError);
     }
-  }  
+  }
+    
 
 async function logError(location, error) {
   const now = new Date();
