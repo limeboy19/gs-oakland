@@ -45,19 +45,18 @@ export async function afterUpdateRichContent(item) {
 
 export async function afterInsertRichContent(partialItem) {
   try {
-    const item = await wixData.get("RichContent", partialItem._id, {
-      ...authOptions,
-      include: ["categories", "resourceType"]
-    });
+   
+    await new Promise(resolve => setTimeout(resolve, 250));
 
-    console.log("Final item?", item);
+    const item = await wixData.get("RichContent", partialItem._id, authOptions);
+    console.log("Final item?", item); // should now include categories/resourceType IDs
 
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
     const syncedFields = {
       title: item.title,
-      categories: item.categories, 
-      resourceType: item.resourceType, 
+      categories: item.categories,       
+      resourceType: item.resourceType,   
       description: item.description,
       link: textURL,
       referenceId: item._id
@@ -72,6 +71,7 @@ export async function afterInsertRichContent(partialItem) {
 
   return partialItem;
 }
+
 
   
 
