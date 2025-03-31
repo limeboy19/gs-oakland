@@ -28,10 +28,14 @@ export function Video_afterInsert(item, context) {
 export async function Video_afterUpdate(item, context) {
   console.log("afterUpdate_Video triggered", item);
    afterUpdateVideo(item, authOptions);
+
+   if(item?.needsCategorySync == true) {
+      syncVideoCategories();
+   }
 }
 
 export async function MasterHubAutomated_afterUpdate(item, context) {
   console.log("afterUpdate_MasterHub triggered", item);
-  syncVideoCategories();
+  //syncVideoCategories();
 }
 
