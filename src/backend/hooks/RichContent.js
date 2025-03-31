@@ -54,20 +54,24 @@ export async function afterInsertRichContent(partialItem) {
     console.log("Final item?", item);
 
     const categoryIds = item.categories.map(c => c._id);
-    console.log("Category IDs being inserted:", categoryIds);
-
     const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
-    const syncedFields = {
+    // Step 1: Insert item (without multi-ref)
+    const inserted = await wixData.insert("MasterHubAutomated", {
       title: item.title,
-      categories: categoryIds,
       description: item.description,
       link: textURL,
       referenceId: item._id
-    };
+    }, authOptions);
 
-    await wixData.insert("MasterHubAutomated", syncedFields, authOptions);
-    console.log(`Inserted into MasterHubAutomated with full reference IDs`);
+    console.log(`Inserted MasterHubAutomated item: ${inserted._id}`);
+
+    // Step 2: Link multi-reference field (categories)
+    if (categoryIds.length > 0) {
+      await wixData.insertReference("MasterHubAutomated", inserted._id, "categories", categoryIds, authOptions);
+      console.log(`Inserted category references for item: ${inserted._id}`);
+    }
+
   } catch (error) {
     console.error("Error in afterInsertRichContent:", error);
     await logError("afterInsert - RichContent", error);
@@ -75,6 +79,7 @@ export async function afterInsertRichContent(partialItem) {
 
   return partialItem;
 }
+
 
 
 
