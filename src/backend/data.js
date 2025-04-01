@@ -7,7 +7,7 @@ let authOptions = { suppressAuth: true };
 
 export function RichContent_afterInsert(item, context) {
   console.log("afterInsert_RichContent hook triggered", item);
-  afterInsertRichContent(item);
+  //afterInsertRichContent(item);
 
   if(item?.needsCategorySync == true) {
     //syncRichContentCategories();
@@ -17,7 +17,7 @@ export function RichContent_afterInsert(item, context) {
 
 export async function RichContent_afterUpdate(item, context) {
   console.log("afterUpdate_RichContent hook triggered", item);
-  afterUpdateRichContent(item);
+  //afterUpdateRichContent(item);
 
   if(item?.needsCategorySync == true) {
     //syncRichContentCategories();
@@ -27,19 +27,19 @@ export async function RichContent_afterUpdate(item, context) {
 
 export function Video_afterInsert(item, context) {
   console.log("afterInsert_Video hook triggered", item);
-  afterInsertVideo(item);
+  //afterInsertVideo(item);
 
   if(item?.needsCategorySync == true) {
-    syncVideoCategories();
+    //syncVideoCategories();
  }
 }
 
 export async function Video_afterUpdate(item, context) {
   console.log("afterUpdate_Video hook triggered", item);
-   afterUpdateVideo(item);
+  // afterUpdateVideo(item);
 
    if(item?.needsCategorySync == true) {
-      syncVideoCategories();
+     // syncVideoCategories();
    }
 }
 
