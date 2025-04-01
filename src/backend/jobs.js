@@ -64,8 +64,9 @@ export async function syncVideoCategories() {
       await logError("replaceReferences - syncVideoCategories", replaceErr);
     }
 
-    // ✅ Mark as synced
+    
     const saveObject = { ...item, needsCategorySync: false };
+    console.log("Job saveObject for Video", saveObject);
     await wixData.save("Video", saveObject, authOptions);
     console.log(`Marked video as synced: ${item._id}`);
 
@@ -143,6 +144,7 @@ export async function syncRichContentCategories() {
 
     // Mark item as synced
     const saveObject = { ...item, needsCategorySync: false };
+    console.log("Job saveObject for Rich Content", saveObject);
     await wixData.save("RichContent", saveObject, authOptions);
     console.log(`Marked RichContent as synced: ${item._id}`);
 
