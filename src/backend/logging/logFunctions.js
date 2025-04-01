@@ -1,5 +1,8 @@
 import wixData from 'wix-data';
 
+//Global Variables
+const authOptions = { suppressAuth: true, suppressHooks: true }
+
 //For logging job runs
 export async function logJobRun({ title, successful }) {
   const now = new Date();

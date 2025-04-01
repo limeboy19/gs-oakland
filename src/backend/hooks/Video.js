@@ -1,4 +1,5 @@
 import wixData from 'wix-data';
+import {logError} from 'backend/logging/logFunctions.js';
 
 const authOptions = { suppressAuth: true, suppressHooks: true };
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';

@@ -1,4 +1,5 @@
 import wixData from 'wix-data';
+import {logError} from 'backend/logging/logFunctions.js';
 
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
 const authOptions = { suppressAuth: true };
@@ -45,7 +46,7 @@ export async function afterUpdateRichContent(partialItem) {
     console.log(`Updated MasterHubAutomated core fields: ${masterItem._id}`);
 
     // Flag for category sync (to be handled by background job)
-    await wixData.update("RichContent", {
+    await wixData.save("RichContent", {
       _id: item._id,
       needsCategorySync: true
     }, authOptions);
@@ -86,7 +87,7 @@ export async function afterInsertRichContent(partialItem) {
     console.log(`Inserted MasterHubAutomated item for RichContent: ${inserted._id}`);
 
     // Flag for category sync (handled by background job)
-    await wixData.update("RichContent", {
+    await wixData.save("RichContent", {
       _id: item._id,
       needsCategorySync: true
     }, authOptions);
@@ -101,24 +102,6 @@ export async function afterInsertRichContent(partialItem) {
   return partialItem;
 }
 
-
-async function logError(location, error) {
-  const now = new Date();
-  const logEntry = {
-    title: error.message || String(error),
-    errorOgLocation: location,
-    dateOfError: new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" })),
-    timeOfError: now.toLocaleTimeString("en-US", { timeZone: "America/New_York" }),
-    errorObject: error
-  };
-
-  try {
-    await wixData.insert("logs", logEntry, authOptions);
-  } catch (logError) {
-    console.error("Failed to log error to logs collection:", logError);
-  }
-}
-
 //USE THIS TO TEST AN INSERT VIA CODE
 export async function testAfterInsert() {
   const fakeItem = {
@@ -130,7 +113,7 @@ export async function testAfterInsert() {
     _id: "test-id-123"
   };
 
-  const result = await afterInsertRichContent(fakeItem, {});
+  const result = await afterInsertRichContent(fakeItem);;
   return result;
 }
 
