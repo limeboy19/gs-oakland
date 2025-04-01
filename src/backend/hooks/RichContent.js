@@ -7,75 +7,48 @@ export async function afterUpdateRichContent(partialItem) {
   console.log("afterUpdate triggered for RichContent:", partialItem);
 
   try {
-    // Step 1: Get full RichContent item with categories
     const richContentResult = await wixData.query("RichContent")
       .eq("_id", partialItem._id)
-      .include("categories")
       .find(authOptions);
 
     const item = richContentResult.items[0];
-    const categoryIds = item.categories.map(c => c._id);
-    const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+    if (!item) {
+      console.warn(`RichContent not found for ID: ${partialItem._id}`);
+      return partialItem;
+    }
 
-    // Step 2: Find corresponding MasterHubAutomated record
+    const secondaryURL = item["link-rich-content-title"];
+    const textURL = baseURL + secondaryURL;
+
     const hubResult = await wixData.query("MasterHubAutomated")
       .eq("referenceId", item._id)
       .limit(1)
       .find(authOptions);
 
     if (hubResult.items.length === 0) {
-      console.log(`No matching item found in MasterHubAutomated for referenceId: ${item._id}`);
+      console.log(`No MasterHubAutomated match for RichContent ID: ${item._id}`);
       return item;
     }
 
     const masterItem = hubResult.items[0];
 
-    // Step 3: Update main fields
-    const updatedFields = {
+    await wixData.update("MasterHubAutomated", {
       _id: masterItem._id,
-      title: item.title,
+      title: partialItem.title,
       description: item.description,
-      coverImage: item.image,
-      resourceType: '6aea6b46-d208-4f63-b95d-cae0192b6826',
+      coverImage: item.image || null,
       link: textURL,
+      resourceType: '6aea6b46-d208-4f63-b95d-cae0192b6826',
       referenceId: item._id
-    };
+    }, authOptions);
 
-    await wixData.update("MasterHubAutomated", updatedFields, authOptions);
-    console.log(`Updated MasterHubAutomated item with ID: ${masterItem._id}`);
+    console.log(`Updated MasterHubAutomated core fields: ${masterItem._id}`);
 
-    await new Promise((res) => setTimeout(res, 200)); // give Wix time to commit
-
-    // Step 4: Remove and re-insert category references
-    try {
-      const current = await wixData.get("MasterHubAutomated", masterItem._id, authOptions);
-      const existingCategoryIds = current.categories?.map(c => c._id) || [];
-
-      if (existingCategoryIds.length > 0) {
-        await wixData.removeReference(
-          "MasterHubAutomated",
-          "categories",
-          masterItem._id,
-          existingCategoryIds,
-          authOptions
-        );
-        console.log(`Removed existing category references for item: ${masterItem._id}`);
-      }
-
-      if (categoryIds.length > 0) {
-        await wixData.insertReference(
-          "MasterHubAutomated",
-          "categories",
-          masterItem._id,
-          categoryIds,
-          authOptions
-        );
-        console.log(`Inserted updated category references for item: ${masterItem._id}`);
-      }
-
-    } catch (refError) {
-      console.error("Error syncing category references:", refError);
-    }
+    // Flag for category sync (to be handled by background job)
+    await wixData.update("RichContent", {
+      _id: item._id,
+      needsCategorySync: true
+    }, authOptions);
 
   } catch (error) {
     console.error("Error in afterUpdateRichContent:", error);
@@ -85,7 +58,6 @@ export async function afterUpdateRichContent(partialItem) {
   return partialItem;
 }
 
-
 export async function afterInsertRichContent(partialItem) {
   try {
     const result = await wixData.query("RichContent")
@@ -94,12 +66,14 @@ export async function afterInsertRichContent(partialItem) {
       .find(authOptions);
 
     const item = result.items[0];
-    console.log("Final item?", item);
+    if (!item) {
+      console.warn(`Inserted RichContent not found for ID: ${partialItem._id}`);
+      return partialItem;
+    }
 
-    const categoryIds = item.categories.map(c => c._id);
-    const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
+    const secondaryURL = item["link-rich-content-title"];
+    const textURL = baseURL + secondaryURL;
 
-    // Step 1: Insert item (without multi-ref)
     const inserted = await wixData.insert("MasterHubAutomated", {
       title: item.title,
       description: item.description,
@@ -109,19 +83,15 @@ export async function afterInsertRichContent(partialItem) {
       referenceId: item._id
     }, authOptions);
 
-    console.log(`Inserted MasterHubAutomated item: ${inserted._id}`);
+    console.log(`Inserted MasterHubAutomated item for RichContent: ${inserted._id}`);
 
-    if (categoryIds.length > 0) {
-      await wixData.insertReference(
-        "MasterHubAutomated",
-        "categories",
-        inserted._id,
-        categoryIds,
-        authOptions
-      );
-      console.log(`Inserted category references for item: ${inserted._id}`);
-    }
+    // Flag for category sync (handled by background job)
+    await wixData.update("RichContent", {
+      _id: item._id,
+      needsCategorySync: true
+    }, authOptions);
 
+    console.log(`Marked RichContent for category sync: ${item._id}`);
 
   } catch (error) {
     console.error("Error in afterInsertRichContent:", error);

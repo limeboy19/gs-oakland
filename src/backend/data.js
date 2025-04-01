@@ -1,32 +1,41 @@
 import wixData from 'wix-data';
 import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/RichContent.js';
 import { afterInsertVideo, afterUpdateVideo } from 'backend/hooks/Video.js';
-import { syncVideoCategories } from 'backend/jobs.js';
-
-
-
+import { syncVideoCategories, syncRichContentCategories } from 'backend/jobs.js';
 
 let authOptions = { suppressAuth: true };
 
 export function RichContent_afterInsert(item, context) {
-  console.log("afterInsert_RichContent triggered", item);
+  console.log("afterInsert_RichContent hook triggered", item);
   afterInsertRichContent(item,authOptions);
+
+  if(item?.needsCategorySync == true) {
+    syncRichContentCategories();
+ }
   
 }
 
 export async function RichContent_afterUpdate(item, context) {
-  console.log("afterUpdate_RichContent triggered", item);
+  console.log("afterUpdate_RichContent hook triggered", item);
   afterUpdateRichContent(item, authOptions);
+
+  if(item?.needsCategorySync == true) {
+    syncRichContentCategories();
+ }
   
 }
 
 export function Video_afterInsert(item, context) {
-  console.log("afterInsert_Video triggered", item);
+  console.log("afterInsert_Video hook triggered", item);
   afterInsertVideo(item, authOptions);
+
+  if(item?.needsCategorySync == true) {
+    syncVideoCategories();
+ }
 }
 
 export async function Video_afterUpdate(item, context) {
-  console.log("afterUpdate_Video triggered", item);
+  console.log("afterUpdate_Video hook triggered", item);
    afterUpdateVideo(item, authOptions);
 
    if(item?.needsCategorySync == true) {
@@ -34,8 +43,5 @@ export async function Video_afterUpdate(item, context) {
    }
 }
 
-export async function MasterHubAutomated_afterUpdate(item, context) {
-  console.log("afterUpdate_MasterHub triggered", item);
-  //syncVideoCategories();
-}
+
 

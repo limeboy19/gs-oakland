@@ -1,8 +1,8 @@
 import wixData from 'wix-data';
 
-const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
 const authOptions = { suppressAuth: true, suppressHooks: true };
-
+const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
+let secondaryURL;
 
 export async function afterInsertVideo(partialItem) {
     try {
@@ -12,8 +12,13 @@ export async function afterInsertVideo(partialItem) {
         .find(authOptions);
   
       const item = result.items[0];
-      const categoryIds = item.categories.map(c => c._id);
-      const textURL = `${baseURL}/${item["link-video-title"]}`;
+      if (!item) {
+        console.warn(`Inserted video not found for ID: ${partialItem._id}`);
+        return partialItem;
+      }
+      
+      secondaryURL = item["link-video-title"];
+      let textURL = baseURL + secondaryURL;
   
       const inserted = await wixData.insert("MasterHubAutomated", {
         title: item.title,
@@ -26,10 +31,13 @@ export async function afterInsertVideo(partialItem) {
   
       console.log(`Inserted MasterHubAutomated item for Video: ${inserted._id}`);
   
-      if (categoryIds.length > 0) {
-        await wixData.insertReference("MasterHubAutomated", "categories", inserted._id, categoryIds, authOptions);
-        console.log(`Inserted category references for Video: ${item.title}`);
-      }
+      // Flag for category sync (handled by background job)
+      await wixData.update("Video", {
+        _id: item._id,
+        needsCategorySync: true
+      }, authOptions);
+  
+      console.log(`Marked Video for category sync: ${item._id}`);
   
     } catch (error) {
       console.error("Error in afterInsertVideo:", error);
@@ -54,7 +62,8 @@ export async function afterInsertVideo(partialItem) {
         return partialItem;
       }
   
-      const textURL = `${baseURL}/${item["link-video-title"] || ""}`;
+      secondaryURL = item["link-video-title"];
+      let textURL = baseURL + secondaryURL;
   
       const hubResult = await wixData.query("MasterHubAutomated")
         .eq("referenceId", item._id)
@@ -70,7 +79,7 @@ export async function afterInsertVideo(partialItem) {
   
       await wixData.update("MasterHubAutomated", {
         _id: masterItem._id,
-        title: item.title || "",
+        title: partialItem.title,
         description: item.description,
         coverImage: item.coverImage || null,
         link: textURL,
@@ -95,6 +104,7 @@ export async function afterInsertVideo(partialItem) {
   }
     
 
+  //USE THIS TO RUN MASTER SYNC
   export async function syncAllVideosToMasterHub() {
     try {
       const results = await wixData.query("Video")
