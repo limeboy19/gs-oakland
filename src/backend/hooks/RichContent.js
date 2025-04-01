@@ -2,7 +2,7 @@ import wixData from 'wix-data';
 import {logError} from 'backend/logging/logFunctions.js';
 
 const baseURL = 'https://actonemedia.wixstudio.com/gs-oakland';
-const authOptions = { suppressAuth: true };
+const authOptions = { suppressAuth: true, suppressHooks: true };
 
 export async function afterUpdateRichContent(partialItem) {
   console.log("afterUpdate triggered for RichContent:", partialItem);
