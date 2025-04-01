@@ -66,12 +66,10 @@ export async function syncVideoCategories() {
             console.error(`Failed to set new categories for ${masterItem._id}:`, replaceErr);
           }
   
-          // Mark video as synced
-          await wixData.save("Video", {
-            _id: item._id,
-            needsCategorySync: false
-          }, authOptions);
-  
+        // Mark video as synced
+        const saveObject = { ...item, needsCategorySync: false };
+        await wixData.save("Video", saveObject, authOptions);
+
           console.log(`Finished sync for video: ${item.title}`);
         } catch (innerError) {
           jobSuccessful = false;
@@ -150,11 +148,9 @@ export async function syncVideoCategories() {
             console.error(`Failed to set new categories for ${masterItem._id}:`, replaceErr);
           }
   
-          // Mark RichContent as synced
-          await wixData.save("RichContent", {
-            _id: item._id,
-            needsCategorySync: false
-          }, authOptions);
+        // Mark RichContent as synced
+        const saveObject = { ...item, needsCategorySync: false };
+        await wixData.save("RichContent", saveObject, authOptions);
   
           console.log(`Finished sync for RichContent: ${item.title}`);
         } catch (innerError) {

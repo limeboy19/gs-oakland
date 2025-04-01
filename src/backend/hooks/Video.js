@@ -33,10 +33,8 @@ export async function afterInsertVideo(partialItem) {
       console.log(`Inserted MasterHubAutomated item for Video: ${inserted._id}`);
   
       // Flag for category sync (handled by background job)
-      await wixData.save("Video", {
-        _id: item._id,
-        needsCategorySync: true
-      }, authOptions);
+      const saveObject = { ...item, needsCategorySync: true };
+      await wixData.save("RichContent", saveObject, authOptions);
   
       console.log(`Marked Video for category sync: ${item._id}`);
   
@@ -89,12 +87,11 @@ export async function afterInsertVideo(partialItem) {
       }, authOptions);
   
       console.log(`Updated MasterHubAutomated core fields: ${masterItem._id}`);
-  
-      // 👇 Flag for category sync (to be handled by background job)
-      await wixData.save("Video", {
-        _id: item._id,
-        needsCategorySync: true
-      }, authOptions);
+      
+
+      const saveObject = { ...item, needsCategorySync: true };
+      await wixData.save("RichContent", saveObject, authOptions);
+    
   
     } catch (error) {
       console.error("Error in afterUpdateVideo:", error);
