@@ -98,8 +98,17 @@ export async function syncVideoCategories() {
         .find(authOptions);
   
       console.log(`Found ${results.items.length} RichContent item(s) needing sync`);
-  
-      for (const item of results.items) {
+
+      if (results.items.length === 0) {
+        console.log("No RichContent items to sync. Exiting job early.");
+        await logJobRun({
+          title: "syncRichContentCategories",
+          successful: true
+        });
+        return;
+      }
+      
+        for (const item of results.items) {
         try {
           const categoryIds = Array.isArray(item.categories)
             ? item.categories.map(id => (typeof id === 'object' ? id._id : id))
