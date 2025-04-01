@@ -3,7 +3,7 @@ import { afterInsertRichContent, afterUpdateRichContent } from 'backend/hooks/Ri
 import { afterInsertVideo, afterUpdateVideo } from 'backend/hooks/Video.js';
 import { syncVideoCategories, syncRichContentCategories } from 'backend/jobs.js';
 
-let authOptions = { suppressAuth: true };
+let authOptions = { suppressAuth: true, suppressHooks: true };
 
 export function RichContent_afterInsert(item, context) {
   console.log("afterInsert_RichContent hook triggered", item);
