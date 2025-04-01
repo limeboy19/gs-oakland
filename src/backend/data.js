@@ -13,7 +13,7 @@ export function RichContent_afterInsert(item, context) {
 
 export async function RichContent_afterUpdate(item, context) {
   console.log("afterUpdate_RichContent hook triggered", item);
-  afterUpdateRichContent(item);
+  await afterUpdateRichContent(item);
 
   if(item?.needsCategorySync == true) {
     syncRichContentCategories();
@@ -29,7 +29,7 @@ export function Video_afterInsert(item, context) {
 
 export async function Video_afterUpdate(item, context) {
   console.log("afterUpdate_Video hook triggered", item);
-  afterUpdateVideo(item);
+  await afterUpdateVideo(item);
 
    if(item?.needsCategorySync == true) {
      syncVideoCategories();
