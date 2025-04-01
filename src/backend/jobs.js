@@ -68,7 +68,7 @@ export async function syncVideoCategories() {
   
         // Mark video as synced
         const saveObject = { ...item, needsCategorySync: false };
-        await wixData.update("Video", saveObject, authOptions);
+        await wixData.save("Video", saveObject, authOptions);
 
           console.log(`Finished sync for video: ${item.title}`);
         } catch (innerError) {
@@ -120,7 +120,7 @@ export async function syncVideoCategories() {
           const masterItem = hubResult.items[0];
           console.log(`Found MasterHubAutomated item: ${masterItem._id}`);
   
-          // Clear old references first
+          // Clear old references
           try {
             await wixData.replaceReferences(
               "MasterHubAutomated",
@@ -134,7 +134,7 @@ export async function syncVideoCategories() {
             console.error(`Failed to clear categories for ${masterItem._id}:`, clearErr);
           }
   
-          // Then set new references
+          // Set new references
           try {
             await wixData.replaceReferences(
               "MasterHubAutomated",
@@ -148,11 +148,11 @@ export async function syncVideoCategories() {
             console.error(`Failed to set new categories for ${masterItem._id}:`, replaceErr);
           }
   
-        // Mark RichContent as synced
-        const saveObject = { ...item, needsCategorySync: false };
-        await wixData.update("RichContent", saveObject, authOptions);
+          // ✅ Mark as synced using .save() to avoid field wiping
+          const saveObject = { ...item, needsCategorySync: false };
+          await wixData.save("RichContent", saveObject, authOptions);
+          console.log(`Marked RichContent as synced: ${item._id}`);
   
-          console.log(`Finished sync for RichContent: ${item.title}`);
         } catch (innerError) {
           jobSuccessful = false;
           await logError(`syncRichContentCategories - itemId: ${item._id}`, innerError);
