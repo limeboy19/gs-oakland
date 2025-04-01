@@ -70,6 +70,9 @@ export async function syncVideoCategories() {
     await wixData.save("Video", saveObject, authOptions);
     console.log(`Marked video as synced: ${item._id}`);
 
+    return !!item;
+
+
   } catch (error) {
     jobSuccessful = false;
     console.error("Error in syncVideoCategories:", error);
@@ -148,13 +151,50 @@ export async function syncRichContentCategories() {
     await wixData.save("RichContent", saveObject, authOptions);
     console.log(`Marked RichContent as synced: ${item._id}`);
 
+    return !!item;
+
   } catch (error) {
+
     jobSuccessful = false;
     console.error("Error in syncRichContentCategories:", error);
     await logError("syncRichContentCategories - top level", error);
+    return false;
+
   } finally {
     await logJobRun({
       title: "syncRichContentCategories",
+      successful: jobSuccessful
+    });
+  }
+}
+
+export async function syncAllCategoryMappings() {
+  let jobSuccessful = true;
+  let loopCount = 0;
+
+  try {
+    while (true) {
+      loopCount++;
+      console.log(`🔁 Sync loop iteration ${loopCount}...`);
+
+      const videoSynced = await syncVideoCategories();
+      const richContentSynced = await syncRichContentCategories();
+
+      if (!videoSynced && !richContentSynced) {
+        console.log("✅ All items synced. Exiting.");
+        break;
+      }
+    }
+  } catch (error) {
+    
+    jobSuccessful = false;
+    console.error("Error in syncAllCategoryMappings:", error);
+    await logError("syncAllCategoryMappings - top level", error);
+    return false;
+
+  } finally {
+    await logJobRun({
+      title: "syncAllCategoryMappings",
       successful: jobSuccessful
     });
   }
