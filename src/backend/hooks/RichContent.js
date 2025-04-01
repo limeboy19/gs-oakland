@@ -47,7 +47,7 @@ export async function afterUpdateRichContent(partialItem) {
 
     // Flag for category sync (to be handled by background job)
     const saveObject = { ...item, needsCategorySync: true };
-    await wixData.save("RichContent", saveObject, authOptions);
+    await wixData.update("RichContent", saveObject, authOptions);
     
 
   } catch (error) {
@@ -86,7 +86,7 @@ export async function afterInsertRichContent(partialItem) {
     console.log(`Inserted MasterHubAutomated item for RichContent: ${inserted._id}`);
 
     const saveObject = { ...item, needsCategorySync: true };
-    await wixData.save("RichContent", saveObject, authOptions);
+    await wixData.update("RichContent", saveObject, authOptions);
 
     console.log(`Marked RichContent for category sync: ${item._id}`);
 

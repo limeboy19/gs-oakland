@@ -68,7 +68,7 @@ export async function syncVideoCategories() {
   
         // Mark video as synced
         const saveObject = { ...item, needsCategorySync: false };
-        await wixData.save("Video", saveObject, authOptions);
+        await wixData.update("Video", saveObject, authOptions);
 
           console.log(`Finished sync for video: ${item.title}`);
         } catch (innerError) {
@@ -150,7 +150,7 @@ export async function syncVideoCategories() {
   
         // Mark RichContent as synced
         const saveObject = { ...item, needsCategorySync: false };
-        await wixData.save("RichContent", saveObject, authOptions);
+        await wixData.update("RichContent", saveObject, authOptions);
   
           console.log(`Finished sync for RichContent: ${item.title}`);
         } catch (innerError) {

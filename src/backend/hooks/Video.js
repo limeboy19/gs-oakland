@@ -34,7 +34,7 @@ export async function afterInsertVideo(partialItem) {
   
       // Flag for category sync (handled by background job)
       const saveObject = { ...item, needsCategorySync: true };
-      await wixData.save("RichContent", saveObject, authOptions);
+      await wixData.update("RichContent", saveObject, authOptions);
   
       console.log(`Marked Video for category sync: ${item._id}`);
   
@@ -91,7 +91,7 @@ export async function afterInsertVideo(partialItem) {
 
       const saveObject = { ...item, needsCategorySync: true };
       console.log("What are we saving?", saveObject);
-      await wixData.save("RichContent", saveObject, authOptions);
+      await wixData.update("RichContent", saveObject, authOptions);
     
   
     } catch (error) {
