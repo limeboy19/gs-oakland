@@ -67,7 +67,7 @@ export async function syncVideoCategories() {
           }
   
           // Mark video as synced
-          await wixData.update("Video", {
+          await wixData.save("Video", {
             _id: item._id,
             needsCategorySync: false
           }, authOptions);
@@ -151,7 +151,7 @@ export async function syncVideoCategories() {
           }
   
           // Mark RichContent as synced
-          await wixData.update("RichContent", {
+          await wixData.save("RichContent", {
             _id: item._id,
             needsCategorySync: false
           }, authOptions);
