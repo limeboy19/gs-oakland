@@ -90,6 +90,7 @@ export async function afterInsertVideo(partialItem) {
       
 
       const saveObject = { ...item, needsCategorySync: true };
+      console.log("What are we saving?", saveObject);
       await wixData.save("RichContent", saveObject, authOptions);
     
   
