@@ -175,13 +175,13 @@ export async function syncAllCategoryMappings() {
   try {
     while (true) {
       loopCount++;
-      console.log(`🔁 Sync loop iteration ${loopCount}...`);
+      console.log(`Sync loop iteration ${loopCount}...`);
 
       const videoSynced = await syncVideoCategories();
       const richContentSynced = await syncRichContentCategories();
 
       if (!videoSynced && !richContentSynced) {
-        console.log("✅ All items synced. Exiting.");
+        console.log("All items synced. Exiting.");
         break;
       }
     }
