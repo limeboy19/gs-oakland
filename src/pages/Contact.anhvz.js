@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import wixData from 'wix-data';
 
 $w.onReady(function () {
@@ -136,3 +137,15 @@ $w('#repeaterStaff').onItemReady(($item, itemData) => {
   
   
   
+=======
+// API Reference: https://www.wix.com/velo/reference/api-overview/introduction
+// “Hello, World!” Example: https://learn-code.wix.com/en/article/hello-world
+
+$w.onReady(function () {
+    // Write your JavaScript here
+
+    // To select an element by ID use: $w('#elementID')
+
+    // Click 'Preview' to run your code
+});
+>>>>>>> 083775c (adjust category and sub category repeater code and edit description length for master hub repeater)
