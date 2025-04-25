@@ -21,10 +21,18 @@ $w.onReady(async function () {
   setupSubCategoryRepeater();
   setupMasterHubRepeater();
 
+  $w('#ddlSort').value = "asc";
+  sortMasterHub("asc");
+
   $w('#btnFilter').onClick(handleFilterClick);
   $w('#btnClear').onClick(handleClearClick);
   $w('#inputSearchBar').onInput(handleSearchInput);
   $w('#btnClearSearch').onClick(handleClearSearch);
+
+  $w('#ddlSort').onChange((event) => {
+      const selectedSort = event.target.value;
+      sortMasterHub(selectedSort);
+  });
 });
 
 // Repeater Set Up Section //
@@ -178,6 +186,27 @@ function setupMasterHubRepeater() {
   
     $w('#dsMasterHub').setFilter(filter);
   }
+
+
+
+  function sortMasterHub(order) {
+    let sort;
+
+    console.log("Sort Order:", order);
+  
+    if (order === "desc") {
+      console
+      sort = wixData.sort().descending("title");
+    } else {
+      console
+      // Default to ascending order
+      sort = wixData.sort().ascending("title");
+    }
+  
+    $w("#dsMasterHub").setSort(sort);
+  }
+  
+  
   
   
   
