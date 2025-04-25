@@ -89,7 +89,6 @@ export async function afterInsertVideo(partialItem) {
   
       console.log(`Updated MasterHubAutomated core fields: ${masterItem._id}`);
       
-
       const saveObject = { ...item, needsCategorySync: true };
       console.log("What are we saving?", saveObject);
       await wixData.update("Video", saveObject, authOptions);

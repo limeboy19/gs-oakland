@@ -13,6 +13,7 @@ export async function syncVideoCategories() {
       .eq("needsCategorySync", true)
       .limit(1)
       .include("categories")
+      .include("ageGroups") 
       .find(authOptions);
 
     const item = results.items[0];
@@ -30,7 +31,12 @@ export async function syncVideoCategories() {
       ? item.categories.map(id => (typeof id === 'object' ? id._id : id))
       : [];
 
+    const ageGroupIds = Array.isArray(item.ageGroups)
+      ? item.ageGroups.map(id => (typeof id === 'object' ? id._id : id))
+      : [];
+
     console.log(`Syncing "${item.title}" (${item._id}) with categories:`, categoryIds);
+    console.log(`Syncing "${item.title}" (${item._id}) with ageGroups:`, ageGroupIds);
 
     const hubResult = await wixData.query("MasterHubAutomated")
       .eq("referenceId", item._id)
@@ -38,7 +44,7 @@ export async function syncVideoCategories() {
       .find(authOptions);
 
     if (hubResult.items.length === 0) {
-      console.warn(`No MasterHubAutomated found for video: ${item._id}`);
+      console.warn(`No MasterHubAutomated found for Video: ${item._id}`);
       await logJobRun({
         title: "syncVideoCategories",
         successful: false
@@ -49,6 +55,7 @@ export async function syncVideoCategories() {
     const masterItem = hubResult.items[0];
     console.log(`Found MasterHubAutomated item: ${masterItem._id}`);
 
+    // Replace categories
     try {
       await wixData.replaceReferences(
         "MasterHubAutomated",
@@ -61,17 +68,31 @@ export async function syncVideoCategories() {
     } catch (replaceErr) {
       jobSuccessful = false;
       console.error(`Failed to set categories for ${masterItem._id}:`, replaceErr);
-      await logError("replaceReferences - syncVideoCategories", replaceErr);
+      await logError("replaceReferences - categories - syncVideoCategories", replaceErr);
     }
 
-    
+    // Replace ageGroups
+    try {
+      await wixData.replaceReferences(
+        "MasterHubAutomated",
+        "ageGroups",
+        masterItem._id,
+        ageGroupIds,
+        authOptions
+      );
+      console.log(`Replaced ageGroups for MasterHubAutomated ${masterItem._id}`);
+    } catch (replaceErr) {
+      jobSuccessful = false;
+      console.error(`Failed to set ageGroups for ${masterItem._id}:`, replaceErr);
+      await logError("replaceReferences - ageGroups - syncVideoCategories", replaceErr);
+    }
+
     const saveObject = { ...item, needsCategorySync: false };
     console.log("Job saveObject for Video", saveObject);
     await wixData.save("Video", saveObject, authOptions);
     console.log(`Marked video as synced: ${item._id}`);
 
     return !!item;
-
 
   } catch (error) {
     jobSuccessful = false;
@@ -85,6 +106,7 @@ export async function syncVideoCategories() {
   }
 }
 
+
 export async function syncRichContentCategories() {
   let jobSuccessful = true;
 
@@ -93,6 +115,7 @@ export async function syncRichContentCategories() {
       .eq("needsCategorySync", true)
       .limit(1)
       .include("categories")
+      .include("ageGroup")
       .find(authOptions);
 
     const item = results.items[0];
@@ -110,7 +133,12 @@ export async function syncRichContentCategories() {
       ? item.categories.map(id => (typeof id === 'object' ? id._id : id))
       : [];
 
+    const ageGroupIds = Array.isArray(item.ageGroup)
+      ? item.ageGroup.map(id => (typeof id === 'object' ? id._id : id))
+      : [];
+
     console.log(`Syncing "${item.title}" (${item._id}) with categories:`, categoryIds);
+    console.log(`Syncing "${item.title}" (${item._id}) with ageGroups:`, ageGroupIds);
 
     const hubResult = await wixData.query("MasterHubAutomated")
       .eq("referenceId", item._id)
@@ -129,7 +157,7 @@ export async function syncRichContentCategories() {
     const masterItem = hubResult.items[0];
     console.log(`Found MasterHubAutomated item: ${masterItem._id}`);
 
-    // Replace categories in one go
+    // Replace categories
     try {
       await wixData.replaceReferences(
         "MasterHubAutomated",
@@ -142,7 +170,23 @@ export async function syncRichContentCategories() {
     } catch (refErr) {
       jobSuccessful = false;
       console.error(`Failed to set new categories for ${masterItem._id}:`, refErr);
-      await logError("replaceReferences - syncRichContentCategories", refErr);
+      await logError("replaceReferences - categories - syncRichContentCategories", refErr);
+    }
+
+    // Replace ageGroups
+    try {
+      await wixData.replaceReferences(
+        "MasterHubAutomated",
+        "ageGroups",
+        masterItem._id,
+        ageGroupIds,
+        authOptions
+      );
+      console.log(`Replaced ageGroups for MasterHubAutomated ${masterItem._id}`);
+    } catch (refErr) {
+      jobSuccessful = false;
+      console.error(`Failed to set new ageGroups for ${masterItem._id}:`, refErr);
+      await logError("replaceReferences - ageGroups - syncRichContentCategories", refErr);
     }
 
     // Mark item as synced
@@ -154,7 +198,6 @@ export async function syncRichContentCategories() {
     return !!item;
 
   } catch (error) {
-
     jobSuccessful = false;
     console.error("Error in syncRichContentCategories:", error);
     await logError("syncRichContentCategories - top level", error);
@@ -167,6 +210,7 @@ export async function syncRichContentCategories() {
     });
   }
 }
+
 
 export async function syncAllCategoryMappings() {
   let jobSuccessful = true;
