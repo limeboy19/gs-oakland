@@ -22,14 +22,14 @@ export async function RichContent_afterUpdate(item, context) {
   
 }
 
-export async function RichContent_afterDelete(item, context) {
+export async function RichContent_afterRemove(item, context) {
   console.log("afterDelete_RichContent hook triggered", item);
   await afterDeleteRichContent(item);
 }
 
 //VIDEO
 export function Video_afterInsert(item, context) {
-  console.log("afterInsert_Video hook triggered", item);
+  console.log("afterRemove_Video hook triggered", item);
   afterInsertVideo(item);
 
 }
@@ -43,8 +43,8 @@ export async function Video_afterUpdate(item, context) {
    }
 }
 
-export async function Video_afterDelete(item, context) {
-  console.log("afterDelete_Video hook triggered", item);
+export async function Video_afterRemove(item, context) {
+  console.log("afterRemove_Video hook triggered", item);
   await afterDeleteVideo(item);
   
 }
