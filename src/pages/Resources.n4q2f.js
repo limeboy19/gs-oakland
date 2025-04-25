@@ -4,22 +4,24 @@ import wixData from 'wix-data';
 
 const authOptions = { suppressAuth: true, suppressHooks: true };
 
-//Global Variables
+// Global Variables //
 let categoryMap = {}; 
 let selectedCategoryIds = [];
 let selectedSubCategoryIds = [];
+let selectedAgeGroupIds = [];
 let searchText;
 let searchFilter;
 
+// On Ready Section //
 $w.onReady(async function () {
 
   const result = await MasterHubCategories(); 
   categoryMap = buildCategoryMap(result.items);
 
-  await MasterHubCategories();
   setupCategoryRepeater();
   setupSubCategoryRepeater();
   setupMasterHubRepeater();
+  setupAgeCategoryRepeater();
 
   $w('#ddlSort').value = "asc";
   sortMasterHub("asc");
@@ -52,7 +54,17 @@ function setupSubCategoryRepeater() {
         //console.log("Item Data Sub Category", itemData);
       $item('#checkboxSubCategory').label = itemData.title;
       $item('#checkboxSubCategory').value = itemData._id;
-      $item('#checkboxSubCategory').value = itemData._id;
+      $item('#checkboxSubCategory').enable();
+    });
+  });
+}
+
+function setupAgeCategoryRepeater() {
+  $w('#dsAgeGroups').onReady(() => {
+    $w('#repeaterAges').onItemReady(($item, itemData, index) => {
+      $item('#checkBoxAgeGroup').label = itemData.title;
+      $item('#checkBoxAgeGroup').value = itemData._id;
+      $item('#checkBoxAgeGroup').enable();
     });
   });
 }
@@ -77,7 +89,8 @@ function setupMasterHubRepeater() {
       });
     });
   }
-  
+
+  // Helper Functions Section //
   function truncateToNearestWord(text, maxLength) {
     if (text.length <= maxLength) return text;
     let cutoffIndex = text.lastIndexOf(' ', maxLength);
@@ -85,49 +98,6 @@ function setupMasterHubRepeater() {
   
     truncated = truncated.replace(/[.,;:]$/, '');
     return truncated + '...';
-  }
-
-  function buildCategoryMap(items) {
-    const map = {};
-    for (let item of items) {
-      const categories = (item.categories || []).map(category => category.title); 
-      map[item._id] = categories;
-    }
-    return map;
-  }
-  
-
-  export async function MasterHubCategories() {
-    try {
-      const result = await wixData.query("MasterHubAutomated")
-        .include("categories")
-        .find(authOptions);
-      //console.log("Backend: Query success", result.items.length);
-      return result;
-    } catch (err) {
-      console.error("Backend error:", err);
-      throw err;
-    }
-  }
-
-  // Click Section for Filters of Datasets //
-  
-  function handleFilterClick() {
-    const selectedCategoryIds = getCheckedValues('#repeaterCategories', '#checkboxCategorySelection');
-    const selectedSubCategoryIds = getCheckedValues('#repeaterSubCategories', '#checkboxSubCategory');
-
-  
-    let filter = wixData.filter();
-  
-    if (selectedCategoryIds.length > 0) {
-      filter = filter.hasSome('categories', selectedCategoryIds);
-    }
-  
-    if (selectedSubCategoryIds.length > 0) {
-      filter = filter.hasSome('subcategories', selectedSubCategoryIds);
-    }
-  
-    $w('#dsMasterHub').setFilter(filter);
   }
 
   function getCheckedValues(repeaterId, checkboxId) {
@@ -140,11 +110,13 @@ function setupMasterHubRepeater() {
     return values;
   }
 
-  function handleClearClick() {
-    clearRepeaterCheckboxes('#repeaterCategories', '#checkboxCategorySelection');
-    clearRepeaterCheckboxes('#repeaterSubCategories', '#checkboxSubCategory');
-  
-    $w('#dsMasterHub').setFilter(wixData.filter());
+  function buildCategoryMap(items) {
+    const map = {};
+    for (let item of items) {
+      const categories = (item.categories || []).map(category => category.title); 
+      map[item._id] = categories;
+    }
+    return map;
   }
 
   function clearRepeaterCheckboxes(repeaterId, checkboxId) {
@@ -163,6 +135,44 @@ function setupMasterHubRepeater() {
     searchText = "";
     applyFilters();
   }
+  
+  // Dataset manipulation //
+  function handleFilterClick() {
+    selectedCategoryIds = getCheckedValues('#repeaterCategories', '#checkboxCategorySelection');
+    selectedSubCategoryIds = getCheckedValues('#repeaterSubCategories', '#checkboxSubCategory');
+    selectedAgeGroupIds = getCheckedValues('#repeaterAges', '#checkBoxAgeGroup');
+
+    //console.log("Selected Categories:", selectedCategoryIds);
+    //console.log("Selected SubCategories:", selectedSubCategoryIds);
+    //console.log("Selected AgeGroups:", selectedAgeGroupIds);
+
+  
+    let filter = wixData.filter();
+  
+    if (selectedCategoryIds.length > 0) {
+      filter = filter.hasSome('categories', selectedCategoryIds);
+    }
+  
+    if (selectedSubCategoryIds.length > 0) {
+      filter = filter.hasSome('subcategories', selectedSubCategoryIds);
+    }
+
+    if (selectedAgeGroupIds.length > 0) {
+      filter = filter.hasSome('ageGroups', selectedAgeGroupIds);
+    }
+  
+    $w('#dsMasterHub').setFilter(filter);
+  }
+
+
+  function handleClearClick() {
+    clearRepeaterCheckboxes('#repeaterCategories', '#checkboxCategorySelection');
+    clearRepeaterCheckboxes('#repeaterSubCategories', '#checkboxSubCategory');
+    clearRepeaterCheckboxes('#repeaterAges', '#checkBoxAgeGroup');
+  
+    $w('#dsMasterHub').setFilter(wixData.filter());
+  }
+
 
   function applyFilters() {
     let filter = wixData.filter();
@@ -174,9 +184,13 @@ function setupMasterHubRepeater() {
     if (selectedSubCategoryIds.length > 0) {
       filter = filter.hasSome('subcategories', selectedSubCategoryIds);
     }
+
+    if (selectedAgeGroupIds.length > 0) {
+      filter = filter.hasSome('ageGroups', selectedAgeGroupIds);
+    }
   
     if (searchText.length > 0) {
-      const searchFilter = wixData.filter()
+       const searchFilter = wixData.filter()
         .contains('title', searchText)
         .or(wixData.filter().contains('description', searchText))
         .or(wixData.filter().contains('categories.title', searchText));
@@ -188,22 +202,33 @@ function setupMasterHubRepeater() {
   }
 
 
-
   function sortMasterHub(order) {
     let sort;
 
     console.log("Sort Order:", order);
   
     if (order === "desc") {
-      console
       sort = wixData.sort().descending("title");
     } else {
-      console
-      // Default to ascending order
       sort = wixData.sort().ascending("title");
     }
   
     $w("#dsMasterHub").setSort(sort);
+  }
+
+  // Backend Function Section //
+  //TO BE REMOVED//
+  export async function MasterHubCategories() {
+    try {
+      const result = await wixData.query("MasterHubAutomated")
+        .include("categories")
+        .find(authOptions);
+      //console.log("Backend: Query success", result.items.length);
+      return result;
+    } catch (err) {
+      console.error("Backend error:", err);
+      throw err;
+    }
   }
   
   
