@@ -63,6 +63,7 @@ export async function afterInsertRichContent(partialItem) {
     const result = await wixData.query("RichContent")
       .eq("_id", partialItem._id)
       .include("categories")
+      .include("ageGroup")
       .find(authOptions);
 
     const item = result.items[0];
@@ -113,12 +114,41 @@ export async function testAfterInsert() {
   return result;
 }
 
+export async function afterDeleteRichContent(partialItem) {
+  console.log("afterDelete triggered for RichContent:", partialItem);
+
+  try {
+    const hubResult = await wixData.query("MasterHubAutomated")
+      .eq("title", partialItem.title)
+      .limit(1)
+      .find(authOptions);
+
+    if (hubResult.items.length === 0) {
+      console.log(`No MasterHubAutomated match to delete for RichContent ID: ${partialItem._id}`);
+      return partialItem;
+    }
+
+    const masterItem = hubResult.items[0];
+
+    await wixData.remove("MasterHubAutomated", masterItem._id, authOptions);
+    console.log(`Deleted MasterHubAutomated item: ${masterItem._id}`);
+
+  } catch (error) {
+    console.error("Error in afterDeleteRichContent:", error);
+    await logError("afterDelete - RichContent", error);
+  }
+
+  return partialItem;
+}
+
+
 //USE THIS TO SYNC IF NEEDED//
 export async function syncAllRichContentToMasterHub() {
   try {
     const pageSize = 100; // adjust if needed
     let results = await wixData.query("RichContent")
       .include("categories")
+      .include("ageGroup")
       .limit(pageSize)
       .find(authOptions);
 
@@ -126,6 +156,7 @@ export async function syncAllRichContentToMasterHub() {
 
     for (const item of items) {
       const categoryIds = item.categories?.map(c => c._id) || [];
+      const ageGroupIds = item.ageGroup?.map(a => a._id) || [];
       const textURL = `${baseURL}/${item["link-rich-content-title"]}`;
 
       // Step 1: Insert item without multi-ref
@@ -143,6 +174,11 @@ export async function syncAllRichContentToMasterHub() {
       if (categoryIds.length > 0) {
         await wixData.insertReference("MasterHubAutomated", "categories", inserted._id, categoryIds, authOptions);
         console.log(`Inserted category references for: ${item.title}`);
+      }
+
+      if (ageGroupIds.length > 0) {
+        await wixData.insertReference("MasterHubAutomated", "ageGroups", inserted._id, ageGroupIds, authOptions);
+        console.log(`Inserted ageGroup references for: ${item.title}`); 
       }
     }
 

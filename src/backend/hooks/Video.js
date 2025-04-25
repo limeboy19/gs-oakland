@@ -10,6 +10,7 @@ export async function afterInsertVideo(partialItem) {
       const result = await wixData.query("Video")
         .eq("_id", partialItem._id)
         .include("categories")
+        .include("ageGroups")
         .find(authOptions);
   
       const item = result.items[0];
@@ -34,7 +35,7 @@ export async function afterInsertVideo(partialItem) {
   
       // Flag for category sync (handled by background job)
       const saveObject = { ...item, needsCategorySync: true };
-      await wixData.update("RichContent", saveObject, authOptions);
+      await wixData.update("Video", saveObject, authOptions);
   
       console.log(`Marked Video for category sync: ${item._id}`);
   
@@ -101,18 +102,47 @@ export async function afterInsertVideo(partialItem) {
   
     return partialItem;
   }
-    
 
+  export async function afterDeleteVideo(partialItem) {
+    console.log("afterDelete triggered for Video:", partialItem);
+  
+    try {
+      const hubResult = await wixData.query("MasterHubAutomated")
+        .eq("title", partialItem.title)
+        .limit(1)
+        .find(authOptions);
+  
+      if (hubResult.items.length === 0) {
+        console.log(`No MasterHubAutomated match to delete for Video ID: ${partialItem._id}`);
+        return partialItem;
+      }
+  
+      const masterItem = hubResult.items[0];
+  
+      await wixData.remove("MasterHubAutomated", masterItem._id, authOptions);
+      console.log(`Deleted MasterHubAutomated item: ${masterItem._id}`);
+  
+    } catch (error) {
+      console.error("Error in afterDeleteVideo:", error);
+      await logError("afterDelete - Video", error);
+    }
+  
+    return partialItem;
+  }
+
+    
   //USE THIS TO RUN MASTER SYNC
   export async function syncAllVideosToMasterHub() {
     try {
       const results = await wixData.query("Video")
         .include("categories")
+        .include("ageGroups")
         .limit(100)
         .find(authOptions);
   
       for (const item of results.items) {
         const categoryIds = item.categories?.map(c => c._id) || [];
+        const ageGroupIds = item.ageGroups?.map(a => a._id) || [];
         const textURL = `${baseURL}/${item["link-video-title"]}`;
   
         const inserted = await wixData.insert("MasterHubAutomated", {
@@ -129,6 +159,11 @@ export async function afterInsertVideo(partialItem) {
           await wixData.insertReference("MasterHubAutomated", "categories", inserted._id, categoryIds, authOptions);
           console.log(`Inserted category refs for: ${item.title}`);
         }
+
+        if (ageGroupIds.length > 0) {
+          await wixData.insertReference("MasterHubAutomated", "ageGroups", inserted._id, ageGroupIds, authOptions);
+          console.log(`Inserted ageGroup references for: ${item.title}`);
+        }
       }
   
       console.log("Video sync to MasterHubAutomated complete.");
@@ -139,4 +174,6 @@ export async function afterInsertVideo(partialItem) {
       return { success: false, error: String(error) };
     }
   }
+
+
   
