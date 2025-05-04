@@ -72,9 +72,14 @@ $w.onReady(async function () {
       $w('#repeaterDownloads').onItemReady(($item, itemData) => {
         console.log("📄 Repeater Item:", itemData);
         $item('#txtDownloadsItem').text = itemData.label;
-        $item('#txtDownloadsItem').onClick(() => {
+
+        // Shared click handler
+        const goToDownload = () => {
           wixLocation.to(itemData.url);
-        });
+        };
+
+        $item('#txtDownloadsItem').onClick(goToDownload);
+        $item('#btnDownload').onClick(goToDownload);
       });
 
       $w('#txtDownloads').show();
