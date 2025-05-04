@@ -1,5 +1,7 @@
 import wixData from 'wix-data';
 
+const authOptions = { suppressAuth: true, suppressHooks: true };
+
 export async function ensureAllCategoryAndUpdate(item) {
   const ALL_CATEGORY_ID = "60b01748-cf88-4079-97a4-15d4afed6729";
 
@@ -12,10 +14,17 @@ export async function ensureAllCategoryAndUpdate(item) {
 
   if (!existingRefs.includes(ALL_CATEGORY_ID)) {
     console.log(`📎 Inserting 'ALL' reference for item ${item._id}`);
-    await wixData.insertReference("CommunityPartners", item._id, "PartnerCategories_multireference", ALL_CATEGORY_ID);
+    await wixData.insertReference(
+      "CommunityPartners",
+      "PartnerCategories_multireference",            
+      item._id,                                      
+      [ALL_CATEGORY_ID],                   
+      authOptions                               
+    );
+    
   } else {
     console.log(`✅ 'ALL' reference already exists for item ${item._id}`);
   }
 
-  return item; // or return updated item if needed
+  return item; 
 }
