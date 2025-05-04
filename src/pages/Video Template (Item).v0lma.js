@@ -14,11 +14,10 @@ $w.onReady(async function () {
       $w('#txtQuickLinks').show();
       $w('#repeaterQuickLinks').expand();
       $w('#additionalDownloadsBox').expand();
+    } else {
+      $w('#txtQuickLinks').collapse();
+      $w('#repeaterQuickLinks').collapse();
     }
-	else{
-		$w('#txtQuickLinks').collapse();
-		$w('#repeaterQuickLinks').collapse();
-	}
   });
 
   $w("#dsVideoItem").onReady(async () => {
@@ -31,23 +30,35 @@ $w.onReady(async function () {
 
     const enrichedDownloads = await Promise.all(
       videoItemObj.downloads.map(async (ref, i) => {
-        console.log(`🔄 Fetching file info for download ${i + 1}:`, ref);
-        try {
-          const [info, downloadUrl] = await Promise.all([
-            getFileInfo(ref),
-            getDownloadURL(ref)
-          ]);
+        if (ref.startsWith("wix:")) {
+          try {
+            const [info, downloadUrl] = await Promise.all([
+              getFileInfo(ref),
+              getDownloadURL(ref)
+            ]);
 
-          console.log(`✅ Success [${i + 1}]`, info, downloadUrl);
+            console.log(`✅ Success [${i + 1}]`, info, downloadUrl);
+
+            return {
+              _id: `download-${i}`,
+              label: info.originalFileName || "Download",
+              url: downloadUrl
+            };
+          } catch (err) {
+            console.error(`❌ Failed [${i + 1}] for ref:`, ref, err);
+            return null;
+          }
+        } else {
+          console.warn(`⚠️ External link fallback for [${i + 1}]:`, ref);
+
+          const parsedName = ref.split('/').pop().split('?')[0];
+          const label = decodeURIComponent(parsedName || "External File");
 
           return {
             _id: `download-${i}`,
-            label: info.originalFileName || "Download",
-            url: downloadUrl
+            label,
+            url: ref
           };
-        } catch (err) {
-          console.error(`❌ Failed [${i + 1}] for ref:`, ref, err);
-          return null;
         }
       })
     );
@@ -70,11 +81,9 @@ $w.onReady(async function () {
       $w('#repeaterDownloads').data = validDownloads;
       $w('#repeaterDownloads').expand();
       $w('#additionalDownloadsBox').expand();
+    } else {
+      $w('#txtDownloads').hide();
+      $w('#repeaterDownloads').collapse();
     }
-	else{
-		$w('#txtDownloads').hide();
-		$w('#repeaterDownloads').collapse();
-
-	}
   });
 });

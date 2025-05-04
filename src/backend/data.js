@@ -2,6 +2,7 @@ import wixData from 'wix-data';
 import { afterInsertRichContent, afterUpdateRichContent, afterDeleteRichContent } from 'backend/hooks/RichContent.js';
 import { afterInsertVideo, afterUpdateVideo, afterDeleteVideo } from 'backend/hooks/Video.js';
 import { syncVideoCategories, syncRichContentCategories } from 'backend/jobs.js';
+import { ensureAllCategoryAndUpdate } from 'backend/hooks/Partners.js';
 
 let authOptions = { suppressAuth: true, suppressHooks: true };
 
@@ -9,7 +10,6 @@ let authOptions = { suppressAuth: true, suppressHooks: true };
 export function RichContent_afterInsert(item, context) {
   console.log("afterInsert_RichContent hook triggered", item);
   afterInsertRichContent(item);
-  
 }
 
 export async function RichContent_afterUpdate(item, context) {
@@ -48,6 +48,16 @@ export async function Video_afterRemove(item, context) {
   await afterDeleteVideo(item);
   
 }
+
+//Partner Categories
+export async function CommunityPartners_afterInsert(item, context) {
+  await ensureAllCategoryAndUpdate(item);
+}
+
+export async function CommunityPartners_afterUpdate(item, context) {
+  await ensureAllCategoryAndUpdate(item);
+}
+
 
 
 
