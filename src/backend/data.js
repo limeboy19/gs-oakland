@@ -51,10 +51,12 @@ export async function Video_afterRemove(item, context) {
 
 //Partner Categories
 export async function CommunityPartners_afterInsert(item, context) {
+  console.log("afterInsert_CommunityPartners hook triggered", item);
   await ensureAllCategoryAndUpdate(item);
 }
 
 export async function CommunityPartners_afterUpdate(item, context) {
+  console.log("afterUpdate_CommunityPartners hook triggered", item);
   await ensureAllCategoryAndUpdate(item);
 }
 
