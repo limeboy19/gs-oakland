@@ -28,6 +28,7 @@ $w.onReady(async function () {
 
   $w('#btnFilter').onClick(handleFilterClick);
   $w('#btnClear').onClick(handleClearClick);
+  $w('#btnResetFilters').onClick(handleClearClick);
   $w('#inputSearchBar').onInput(handleSearchInput);
   $w('#btnClearSearch').onClick(handleClearSearch);
 
@@ -70,25 +71,25 @@ function setupAgeCategoryRepeater() {
 }
 
 function setupMasterHubRepeater() {
-    $w('#dsMasterHub').onReady(() => {
-      $w('#repeaterMasterHub').onItemReady(($item, itemData, index) => {
-        //console.log("Item Data Master Hub", itemData);
-        const originalText = itemData.description || '';
-        const truncatedText = truncateToNearestWord(originalText, 105);
-        $item('#txtDescription').text = truncatedText;
-    
+  $w('#repeaterMasterHub').onItemReady(($item, itemData, index) => {
+    console.log("Item Data Master Hub", itemData);
+    const originalText = itemData.description || '';
+    const truncatedText = truncateToNearestWord(originalText, 105);
+    $item('#txtDescription').text = truncatedText;
 
-        const tags = categoryMap[itemData._id] || [];
-        $item('#CategoryTags').collapse();
-        
-        if (tags.length) {
-          $item('#CategoryTags').options = tags.map(tag => ({ label: tag, value: tag }));
-          $item('#CategoryTags').expand();
-        }
-       
-      });
-    });
-  }
+    const tags = categoryMap[itemData._id] || [];
+    if (itemData.title === "Trying New Foods") console.log("Tags for item:", itemData._id, tags);
+
+    if (tags.length) {
+      $item('#CategoryTags').options = tags.map(tag => ({ label: tag, value: tag }));
+      $item('#CategoryTags').expand();
+    } else {
+      console.log("No tags found for item:", itemData._id);
+      $item('#CategoryTags').collapse();
+    }
+  });
+}
+
 
   // Helper Functions Section //
   function truncateToNearestWord(text, maxLength) {
@@ -141,11 +142,6 @@ function setupMasterHubRepeater() {
     selectedCategoryIds = getCheckedValues('#repeaterCategories', '#checkboxCategorySelection');
     selectedSubCategoryIds = getCheckedValues('#repeaterSubCategories', '#checkboxSubCategory');
     selectedAgeGroupIds = getCheckedValues('#repeaterAges', '#checkBoxAgeGroup');
-
-    //console.log("Selected Categories:", selectedCategoryIds);
-    //console.log("Selected SubCategories:", selectedSubCategoryIds);
-    //console.log("Selected AgeGroups:", selectedAgeGroupIds);
-
   
     let filter = wixData.filter();
   
@@ -156,13 +152,27 @@ function setupMasterHubRepeater() {
     if (selectedSubCategoryIds.length > 0) {
       filter = filter.hasSome('subcategories', selectedSubCategoryIds);
     }
-
+  
     if (selectedAgeGroupIds.length > 0) {
       filter = filter.hasSome('ageGroups', selectedAgeGroupIds);
     }
   
-    $w('#dsMasterHub').setFilter(filter);
+    $w('#dsMasterHub').setFilter(filter)
+      .then(() => {
+        const count = $w('#dsMasterHub').getTotalCount();
+        console.log("🔎 Filtered result count:", count);
+  
+        if (count === 0) {
+          $w('#multiStateBoxMasterHub').changeState("noResults");
+        } else {
+          $w('#multiStateBoxMasterHub').changeState("content");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error applying filter:", err);
+      });
   }
+  
 
 
   function handleClearClick() {
@@ -170,8 +180,22 @@ function setupMasterHubRepeater() {
     clearRepeaterCheckboxes('#repeaterSubCategories', '#checkboxSubCategory');
     clearRepeaterCheckboxes('#repeaterAges', '#checkBoxAgeGroup');
   
-    $w('#dsMasterHub').setFilter(wixData.filter());
+    $w('#dsMasterHub').setFilter(wixData.filter())
+      .then(() => {
+        const count = $w('#dsMasterHub').getTotalCount();
+        console.log("🔄 After clear, result count:", count);
+  
+        if (count === 0) {
+          $w('#multiStateBoxMasterHub').changeState("noResults");
+        } else {
+          $w('#multiStateBoxMasterHub').changeState("content");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error clearing filters:", err);
+      });
   }
+  
 
 
   function applyFilters() {
@@ -222,14 +246,17 @@ function setupMasterHubRepeater() {
     try {
       const result = await wixData.query("MasterHubAutomated")
         .include("categories")
+        .limit(1000)
         .find(authOptions);
-      //console.log("Backend: Query success", result.items.length);
+  
+      console.log("Backend: Query success", result.items.length);
       return result;
     } catch (err) {
       console.error("Backend error:", err);
       throw err;
     }
   }
+  
   
   
   

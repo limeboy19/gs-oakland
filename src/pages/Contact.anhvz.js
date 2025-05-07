@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import wixData from 'wix-data';
 
 $w.onReady(function () {
@@ -13,13 +12,13 @@ function loadFilterOptions() {
     wixData.query('Categories').ascending('title').find(),
     wixData.query('Languages').ascending('title').find()
   ])
-  .then(([categoriesResult, languagesResult]) => {
-    populateRepeater('#categoriesRepeater', '#checkboxTextItem', categoriesResult.items);
-    populateRepeater('#languagesRepeater', '#checkboxItemLanguage', languagesResult.items);
-  })
-  .catch((err) => {
-    console.error('Error loading data into filters:', err);
-  });
+    .then(([categoriesResult, languagesResult]) => {
+      populateRepeater('#categoriesRepeater', '#checkboxTextItem', categoriesResult.items);
+      populateRepeater('#languagesRepeater', '#checkboxItemLanguage', languagesResult.items);
+    })
+    .catch((err) => {
+      console.error('Error loading data into filters:', err);
+    });
 }
 
 function populateRepeater(repeaterId, checkboxId, items) {
@@ -61,6 +60,13 @@ function setupFilterButton() {
         });
 
         $w('#repeaterStaff').data = strictItems;
+
+        if (strictItems.length > 0) {
+          $w('#multiStateBoxContacts').changeState("content");
+        } else {
+          $w('#multiStateBoxContacts').changeState("noResults");
+        }
+
       })
       .catch(err => {
         console.error('Error filtering Staff:', err);
@@ -76,12 +82,38 @@ function setupClearButton() {
       .find()
       .then((results) => {
         $w('#repeaterStaff').data = results.items;
+
+        if (results.items.length > 0) {
+          $w('#multiStateBoxContacts').changeState("content");
+        } else {
+          $w('#multiStateBoxContacts').changeState("noResults");
+        }
+      });
+
+    clearCheckboxes('#categoriesRepeater', '#checkboxTextItem');
+    clearCheckboxes('#languagesRepeater', '#checkboxItemLanguage');
+  });
+
+  $w('#btnClearStateBox').onClick(() => {
+    wixData.query('Staff')
+      .include('categories')
+      .include('languages')
+      .find()
+      .then((results) => {
+        $w('#repeaterStaff').data = results.items;
+
+        if (results.items.length > 0) {
+          $w('#multiStateBoxContacts').changeState("content");
+        } else {
+          $w('#multiStateBoxContacts').changeState("noResults");
+        }
       });
 
     clearCheckboxes('#categoriesRepeater', '#checkboxTextItem');
     clearCheckboxes('#languagesRepeater', '#checkboxItemLanguage');
   });
 }
+
 
 function getCheckedIds(repeaterId, checkboxId) {
   const selectedIds = [];
@@ -115,37 +147,22 @@ function setupStaffRepeaterVisibility() {
 }
 
 $w('#repeaterStaff').onItemReady(($item, itemData) => {
-    const phoneRaw = itemData.phone;
-    const phone = String(phoneRaw || '').trim();
-    const hasPhone = phone.length > 0;
-  
-    console.log("Item:", itemData.title || itemData._id);
-    console.log("Raw phone value:", phoneRaw);
-    console.log("Trimmed phone value:", phone);
-    console.log("Has phone:", hasPhone);
-  
-    if (!hasPhone) {
-      console.log("→ Hiding phone button");
-      $item("#btnPhone").hide();
-      $item("#btnPhone").collapse();
-    } else {
-      console.log("→ Showing phone button");
-      $item("#btnPhone").show();
-      $item("#btnPhone").expand();
-    }
-  });
-  
-  
-  
-=======
-// API Reference: https://www.wix.com/velo/reference/api-overview/introduction
-// “Hello, World!” Example: https://learn-code.wix.com/en/article/hello-world
+  const phoneRaw = itemData.phone;
+  const phone = String(phoneRaw || '').trim();
+  const hasPhone = phone.length > 0;
 
-$w.onReady(function () {
-    // Write your JavaScript here
+  //console.log("Item:", itemData.title || itemData._id);
+  //console.log("Raw phone value:", phoneRaw);
+  //console.log("Trimmed phone value:", phone);
+  //console.log("Has phone:", hasPhone);
 
-    // To select an element by ID use: $w('#elementID')
-
-    // Click 'Preview' to run your code
+  if (!hasPhone) {
+    //console.log("→ Hiding phone button");
+    $item("#btnPhone").hide();
+    $item("#btnPhone").collapse();
+  } else {
+    //console.log("→ Showing phone button");
+    $item("#btnPhone").show();
+    $item("#btnPhone").expand();
+  }
 });
->>>>>>> 083775c (adjust category and sub category repeater code and edit description length for master hub repeater)
