@@ -9,7 +9,7 @@ $w.onReady(function () {
 
 function loadFilterOptions() {
   Promise.all([
-    wixData.query('Categories').ascending('title').find(),
+    wixData.query('JobRoles').ascending('title').find(),
     wixData.query('Languages').ascending('title').find()
   ])
     .then(([categoriesResult, languagesResult]) => {
@@ -34,23 +34,27 @@ function setupFilterButton() {
     const selectedCategoryIds = getCheckedIds('#categoriesRepeater', '#checkboxTextItem');
     const selectedLanguageIds = getCheckedIds('#languagesRepeater', '#checkboxItemLanguage');
 
+    console.log("Selected categories:", selectedCategoryIds);
+
     let query = wixData.query('Staff');
 
     if (selectedCategoryIds.length > 0) {
-      query = query.hasSome('categories', selectedCategoryIds);
+      query = query.hasSome('jobRoles', selectedCategoryIds);
     }
 
     if (selectedLanguageIds.length > 0) {
       query = query.hasSome('languages', selectedLanguageIds);
     }
 
+    console.log("Query after filters:", query);
+
     query
-      .include('categories')
+      .include('jobRoles')
       .include('languages')
       .find()
       .then(results => {
         const strictItems = results.items.filter(item => {
-          const staffCategoryIds = (item.categories || []).map(cat => cat._id);
+          const staffCategoryIds = (item.jobRoles || []).map(cat => cat._id);
           const staffLanguageIds = (item.languages || []).map(lang => lang._id);
 
           const hasAllCategories = selectedCategoryIds.every(id => staffCategoryIds.includes(id));
@@ -77,7 +81,7 @@ function setupFilterButton() {
 function setupClearButton() {
   $w('#btnClear').onClick(() => {
     wixData.query('Staff')
-      .include('categories')
+      .include('jobRoles')
       .include('languages')
       .find()
       .then((results) => {
@@ -96,7 +100,7 @@ function setupClearButton() {
 
   $w('#btnClearStateBox').onClick(() => {
     wixData.query('Staff')
-      .include('categories')
+      .include('jobRoles')
       .include('languages')
       .find()
       .then((results) => {
