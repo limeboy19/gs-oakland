@@ -1,9 +1,14 @@
 import wixLocation from 'wix-location';
 import { getFileInfo, getDownloadURL } from 'backend/media/downloadDocuments.web.js';
+import { MasterHubCategories } from 'backend/queries/MasterHubWeb.web.js';
+
+let masterHubCategories;
+
 
 $w.onReady(async function () {
   let hasQuickLinks = false;
   let hasDownloads = false;
+  masterHubCategories = await MasterHubCategories();
 
   $w("#dsQuickLinks").onReady(() => {
     const quickLinksItem = $w("#dsQuickLinks").getCurrentItem();
@@ -91,4 +96,43 @@ $w.onReady(async function () {
       $w('#repeaterDownloads').collapse();
     }
   });
+
+  $w('#repeaterMasterHubIndividual').onItemReady(($item, itemData, index) => {
+
+    console.log("Master Hub Individual Item:", itemData);
+    //console.log("Master Hub Individual Category:", itemData?.categories);
+
+    let textValue = itemData?.description;
+    console.log("Master Hub Individual Description:", textValue);
+    if (textValue && textValue.length > 0) {
+      $item('#txtDescription').text = truncateToNearestWord(itemData.description, 105);
+    }
+    else {
+      $item('#txtDescription').collapse();
+    }
+
+    // Match itemData.title to masterHubCategories.title
+    const matched = masterHubCategories.find(cat => cat.title === itemData.title);
+
+    if (matched && Array.isArray(matched.categories)) {
+      const tagOptions = matched.categories.map(cat => ({
+        label: cat.title,
+        value: cat._id
+      }));
+
+      $item("#selectionTagsMasterHub").options = tagOptions;
+      if (tagOptions.length > 0) {
+        $item("#selectionTagsMasterHub").expand();
+      }
+    }
+
+  });
 });
+
+function truncateToNearestWord(text, maxLength) {
+    if (text?.length <= maxLength) return text;
+    let cutoffIndex = text.lastIndexOf(' ', maxLength);
+    let truncated = text.substring(0, cutoffIndex > 0 ? cutoffIndex : maxLength).trim();
+    truncated = truncated.replace(/[.,;:]$/, '');
+    return truncated + '...';
+  }
