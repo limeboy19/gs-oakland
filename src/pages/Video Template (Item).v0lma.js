@@ -12,7 +12,7 @@ $w.onReady(async function () {
 
   $w("#dsQuickLinks").onReady(() => {
     const quickLinksItem = $w("#dsQuickLinks").getCurrentItem();
-    console.log("Quick Links Object:", quickLinksItem);
+    //console.log("Quick Links Object:", quickLinksItem);
 
     if (quickLinksItem && quickLinksItem.links && quickLinksItem.links.length > 0) {
       hasQuickLinks = true;
@@ -27,7 +27,7 @@ $w.onReady(async function () {
 
   $w("#dsVideoItem").onReady(async () => {
     const videoItemObj = $w("#dsVideoItem").getCurrentItem();
-    console.log("🎥 Video Item:", videoItemObj);
+    //console.log("🎥 Video Item:", videoItemObj);
 
     if (!videoItemObj || !videoItemObj.downloads || videoItemObj.downloads.length === 0) {
       return;
@@ -42,7 +42,7 @@ $w.onReady(async function () {
               getDownloadURL(ref)
             ]);
 
-            console.log(`✅ Success [${i + 1}]`, info, downloadUrl);
+            //console.log(`✅ Success [${i + 1}]`, info, downloadUrl);
 
             return {
               _id: `download-${i}`,
@@ -69,13 +69,13 @@ $w.onReady(async function () {
     );
 
     const validDownloads = enrichedDownloads.filter(Boolean);
-    console.log("✅ Valid downloads:", validDownloads);
+    //console.log("✅ Valid downloads:", validDownloads);
 
     if (validDownloads.length > 0) {
       hasDownloads = true;
 
       $w('#repeaterDownloads').onItemReady(($item, itemData) => {
-        console.log("📄 Repeater Item:", itemData);
+        //console.log("📄 Repeater Item:", itemData);
         $item('#txtDownloadsItem').text = itemData.label;
 
         // Shared click handler
@@ -99,11 +99,11 @@ $w.onReady(async function () {
 
   $w('#repeaterMasterHubIndividual').onItemReady(($item, itemData, index) => {
 
-    console.log("Master Hub Individual Item:", itemData);
+    //console.log("Master Hub Individual Item:", itemData);
     //console.log("Master Hub Individual Category:", itemData?.categories);
 
     let textValue = itemData?.description;
-    console.log("Master Hub Individual Description:", textValue);
+    //console.log("Master Hub Individual Description:", textValue);
     if (textValue && textValue.length > 0) {
       $item('#txtDescription').text = truncateToNearestWord(itemData.description, 105);
     }

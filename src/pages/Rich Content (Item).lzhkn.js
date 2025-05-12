@@ -133,7 +133,7 @@ $w.onReady(async function () {
     );
 
     const validDownloads = enrichedDownloads.filter(Boolean);
-    console.log("✅ Valid downloads:", validDownloads);
+    //console.log("✅ Valid downloads:", validDownloads);
 
     if (validDownloads.length > 0) {
       hasDownloads = true;
