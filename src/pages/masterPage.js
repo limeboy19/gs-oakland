@@ -7,11 +7,11 @@ $w.onReady(async function () {
     if (hasRun) return;
     hasRun = true;
 
-    const currentPath = wixLocation.path.join("/"); // home page = ""
+    const currentPath = wixLocation.path.join("/"); 
     console.log("Current path:", currentPath);
 
     try {
-        if (currentPath === "") {
+        if (currentPath === "" || currentPath === "newsletter" || currentPath === "master-hub") {
             const MasterHubItems = await getFeaturedMasterHubItems();
             //console.log("Emil testing MasterHubItems", MasterHubItems);
 
