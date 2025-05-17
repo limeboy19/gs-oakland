@@ -52,7 +52,7 @@ function setupCategoryRepeater() {
 function setupSubCategoryRepeater() {
   $w('#dsSubCategories').onReady(() => {
     $w('#repeaterSubCategories').onItemReady(($item, itemData, index) => {
-        //console.log("Item Data Sub Category", itemData);
+      //console.log("Item Data Sub Category", itemData);
       $item('#checkboxSubCategory').label = itemData.title;
       $item('#checkboxSubCategory').value = itemData._id;
       $item('#checkboxSubCategory').enable();
@@ -78,13 +78,13 @@ function setupMasterHubRepeater() {
     $item('#txtDescription').text = truncatedText;
 
     const tags = categoryMap[itemData._id] || [];
-    if (itemData.title === "Trying New Foods") console.log("Tags for item:", itemData._id, tags);
+    //if (itemData.title === "Trying New Foods") console.log("Tags for item:", itemData._id, tags);
 
     if (tags.length) {
       $item('#CategoryTags').options = tags.map(tag => ({ label: tag, value: tag }));
       $item('#CategoryTags').expand();
     } else {
-      console.log("No tags found for item:", itemData._id);
+      //console.log("No tags found for item:", itemData._id);
       $item('#CategoryTags').collapse();
     }
   });
@@ -150,7 +150,7 @@ function setupMasterHubRepeater() {
     }
   
     if (selectedSubCategoryIds.length > 0) {
-      filter = filter.hasSome('subcategories', selectedSubCategoryIds);
+      filter = filter.hasSome('categories', selectedSubCategoryIds);
     }
   
     if (selectedAgeGroupIds.length > 0) {
@@ -166,6 +166,7 @@ function setupMasterHubRepeater() {
           $w('#multiStateBoxMasterHub').changeState("noResults");
         } else {
           $w('#multiStateBoxMasterHub').changeState("content");
+          setupMasterHubRepeater();
         }
       })
       .catch((err) => {
@@ -189,6 +190,7 @@ function setupMasterHubRepeater() {
           $w('#multiStateBoxMasterHub').changeState("noResults");
         } else {
           $w('#multiStateBoxMasterHub').changeState("content");
+          setupMasterHubRepeater();
         }
       })
       .catch((err) => {
@@ -200,6 +202,8 @@ function setupMasterHubRepeater() {
 
   function applyFilters() {
     let filter = wixData.filter();
+
+    //console.log("Selected subcategories:", selectedSubCategoryIds);
   
     if (selectedCategoryIds.length > 0) {
       filter = filter.hasSome('categories', selectedCategoryIds);
@@ -222,7 +226,19 @@ function setupMasterHubRepeater() {
       filter = filter.and(searchFilter);
     }
   
-    $w('#dsMasterHub').setFilter(filter);
+    $w('#dsMasterHub').setFilter(filter)
+      .then(() => {
+        const count = $w('#dsMasterHub').getTotalCount();
+        if (count === 0) {
+          $w('#multiStateBoxMasterHub').changeState("noResults");
+        } else {
+          $w('#multiStateBoxMasterHub').changeState("content");
+          setupMasterHubRepeater();
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error applying filters:", err);
+      });
   }
 
 
@@ -256,4 +272,3 @@ function setupMasterHubRepeater() {
       throw err;
     }
   }
-  
