@@ -4,11 +4,54 @@ import wixLocation from 'wix-location';
 let hasRun = false;
 
 $w.onReady(async function () {
-    if (hasRun) return;
-    hasRun = true;
-
-    const currentPath = wixLocation.path.join("/"); 
+    const currentPath = wixLocation.path.join("/");
     console.log("Current path:", currentPath);
+
+    if (currentPath === "" || currentPath === "about-us") {
+        const FAQ = await getFAQ();
+        //console.log("Emil testing FAQ", FAQ);
+        $w("#accordianRpt").data = FAQ;
+
+        $w("#accordianRpt").onItemReady(($item, itemData) => {
+
+            $item("#accordianRptPlus").onClick(() => {
+                const textBox = $item("#accordianRptTxt");
+                const textTitleButton = $item("#accordianRptBtn");
+
+                if (textBox.collapsed) {
+                    textTitleButton.style.color = "#009cdd";
+                    textBox.expand();
+                    $item("#accordianRptPlus").text = "-";
+                } else {
+                    textTitleButton.style.color = "#4a4848";
+                    textBox.collapse();
+                    $item("#accordianRptPlus").text = "+";
+                }
+                
+            });
+
+            $item("#accordianRptTitle").text = itemData.title;
+            $item("#accordianRptTxt").text = itemData.answers;
+
+            $item("#accordianRptBtn").onClick(() => {
+                const textBox = $item("#accordianRptTxt");
+                const textTitleButton = $item("#accordianRptBtn");
+
+                if (textBox.collapsed) {
+                    textTitleButton.style.color = "#009cdd";
+                    textBox.expand();
+                    $item("#accordianRptPlus").text = "-";
+                } else {
+                    textTitleButton.style.color = "#4a4848";
+                    textBox.collapse();
+                    $item("#accordianRptPlus").text = "+";
+                }
+            });
+        });
+    }
+
+    if (hasRun == true) return;
+    hasRun = true;
 
     try {
         if (currentPath === "" || currentPath === "newsletter" || currentPath === "master-hub") {
@@ -38,20 +81,7 @@ $w.onReady(async function () {
                 });
             });
 
-            const FAQ = await getFAQ();
-            //console.log("Emil testing FAQ", FAQ);
 
-            $w("#accordianRpt").data = FAQ;
-
-            $w("#accordianRpt").onItemReady(($item, itemData) => {
-                $item("#accordianRptTitle").text = itemData.title;
-                $item("#accordianRptTxt").text = itemData.answers;
-
-                $item("#accordianRptBtn").onClick(() => {
-                    const textBox = $item("#accordianRptTxt");
-                    textBox.collapsed ? textBox.expand() : textBox.collapse();
-                });
-            });
         }
     } catch (err) {
         console.error("Error rendering data", err);
