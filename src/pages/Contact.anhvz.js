@@ -34,19 +34,29 @@ function setupFilterButton() {
     const selectedCategoryIds = getCheckedIds('#categoriesRepeater', '#checkboxTextItem');
     const selectedLanguageIds = getCheckedIds('#languagesRepeater', '#checkboxItemLanguage');
 
-    console.log("Selected categories:", selectedCategoryIds);
+    //console.log("Selected categories:", selectedCategoryIds);
 
-    let query = wixData.query('Staff');
+    let baseQuery = wixData.query('Staff');
+    let query = baseQuery;
 
     if (selectedCategoryIds.length > 0) {
-      query = query.hasSome('jobRoles', selectedCategoryIds);
+      // Start with the first query
+      let orQuery = wixData.query('Staff').hasSome('jobRoles', [selectedCategoryIds[0]]);
+
+      // Add each subsequent query with an OR
+      for (let i = 1; i < selectedCategoryIds.length; i++) {
+        const roleId = selectedCategoryIds[i];
+        orQuery = orQuery.or(wixData.query('Staff').hasSome('jobRoles', [roleId]));
+      }
+
+      query = orQuery;
     }
 
     if (selectedLanguageIds.length > 0) {
       query = query.hasSome('languages', selectedLanguageIds);
     }
 
-    console.log("Query after filters:", query);
+    //console.log("Query after filters:", query);
 
     query
       .include('jobRoles')
@@ -57,10 +67,13 @@ function setupFilterButton() {
           const staffCategoryIds = (item.jobRoles || []).map(cat => cat._id);
           const staffLanguageIds = (item.languages || []).map(lang => lang._id);
 
-          const hasAllCategories = selectedCategoryIds.every(id => staffCategoryIds.includes(id));
-          const hasAllLanguages = selectedLanguageIds.every(id => staffLanguageIds.includes(id));
+          const matchesCategory = selectedCategoryIds.length === 0 ||
+            selectedCategoryIds.some(id => staffCategoryIds.includes(id));
 
-          return hasAllCategories && hasAllLanguages;
+          const matchesLanguage = selectedLanguageIds.length === 0 ||
+            selectedLanguageIds.every(id => staffLanguageIds.includes(id));
+
+          return matchesCategory && matchesLanguage;
         });
 
         $w('#repeaterStaff').data = strictItems;
