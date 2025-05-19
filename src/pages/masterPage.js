@@ -50,11 +50,12 @@ $w.onReady(async function () {
         });
     }
 
-    if (hasRun == true) return;
-    hasRun = true;
+    //if (hasRun == true) return;
+    //hasRun = true;
 
     try {
-        if (currentPath === "" || currentPath === "newsletter" || currentPath === "master-hub") {
+        if  ($w("#repeaterMaster").rendered) {
+            console.log('MasterHub repeater found');
             const MasterHubItems = await getFeaturedMasterHubItems();
             //console.log("Emil testing MasterHubItems", MasterHubItems);
 
