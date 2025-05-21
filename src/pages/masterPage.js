@@ -8,6 +8,7 @@ $w.onReady(async function () {
     try{
 
      if($w("#accordianRpt").rendered) {
+        console.log('FAQ repeater found');
         const FAQ = await getFAQ();
         //console.log("Emil testing FAQ", FAQ);
         $w("#accordianRpt").data = FAQ;
