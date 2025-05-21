@@ -1,13 +1,13 @@
 import { getFeaturedMasterHubItems, getFAQ } from 'public/publicMaster.js';
 import wixLocation from 'wix-location';
 
-let hasRun = false;
-
 $w.onReady(async function () {
     const currentPath = wixLocation.path.join("/");
     console.log("Current path:", currentPath);
 
-    if (currentPath === "" || currentPath === "about-us") {
+    try{
+
+     if($w("#repeaterMaster").rendered) {
         const FAQ = await getFAQ();
         //console.log("Emil testing FAQ", FAQ);
         $w("#accordianRpt").data = FAQ;
@@ -49,9 +49,10 @@ $w.onReady(async function () {
             });
         });
     }
+    } catch (err) {
+        console.error("Error rendering FAQ repeater", err);
+    }
 
-    //if (hasRun == true) return;
-    //hasRun = true;
 
     try {
         if  ($w("#repeaterMaster").rendered) {
@@ -85,7 +86,7 @@ $w.onReady(async function () {
 
         }
     } catch (err) {
-        console.error("Error rendering data", err);
+        console.error("Error rendering master repeater", err);
     }
 });
 
