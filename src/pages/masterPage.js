@@ -7,7 +7,7 @@ $w.onReady(async function () {
 
     try{
 
-     if($w("#repeaterMaster").rendered) {
+     if($w("#accordianRpt").rendered) {
         const FAQ = await getFAQ();
         //console.log("Emil testing FAQ", FAQ);
         $w("#accordianRpt").data = FAQ;
