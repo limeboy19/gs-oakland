@@ -20,3 +20,34 @@ export const getPartnerCategoryMap = webMethod(
     }
   }
 );
+
+export const getProfessionalFAQs = webMethod(
+  Permissions.Anyone, 
+  async () => {
+    try {
+      const result = await wixData.query("ProfessionalFAQ")
+      .ascending("title")
+      .find();
+      return result.items; // Return the array directly
+    } catch (error) {
+      console.error("getProfessionalFAQs error:", error);
+      throw new Error("Failed to fetch professional FAQs.");
+    }
+  }
+);
+
+export const getProfessionalMasterHubDetails = webMethod(
+  Permissions.Anyone, 
+  async () => {
+    try {
+      const result = await wixData.query("ProfProgramMasterHubAutomated")
+      .include("categories")
+      .include("ages")
+      .find();
+      return result.items; // Return the array directly
+    } catch (error) {
+      console.error("getProfessionalMasterHubDetails error:", error);
+      throw new Error("Failed to fetch professional FAQs.");
+    }
+  }
+);
