@@ -20,7 +20,7 @@ export async function afterInsertProfessionalsGetStarted(partialItem) {
         return partialItem;
       }
       
-      secondaryURL = item["link-professional-programs-title"];
+      secondaryURL = item["link-professionals-get-started-title"];
       let textURL = baseURL + secondaryURL;
   
       const inserted = await wixData.insert("ProfProgramMasterHubAutomated", {
@@ -64,7 +64,7 @@ export async function afterInsertProfessionalsGetStarted(partialItem) {
         return partialItem;
       }
   
-      secondaryURL = item["link-professional-programs-title"];
+      secondaryURL = item["link-professionals-get-started-title"];
       let textURL = baseURL + secondaryURL;
   
       const hubResult = await wixData.query("ProfProgramMasterHubAutomated")
@@ -144,7 +144,7 @@ export async function afterInsertProfessionalsGetStarted(partialItem) {
       for (const item of results.items) {
         const categoryIds = item.categories?.map(c => c._id) || [];
         const ageGroupIds = item.ageGroups?.map(a => a._id) || [];
-        const textURL = `${baseURL}/${item["link-professional-programs-title"]}`;
+        const textURL = `${baseURL}${item["link-professionals-get-started-title"]}`;
   
         const inserted = await wixData.insert("ProfProgramMasterHubAutomated", {
           title: item.title,
