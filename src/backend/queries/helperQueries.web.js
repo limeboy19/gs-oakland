@@ -51,3 +51,40 @@ export const getProfessionalMasterHubDetails = webMethod(
     }
   }
 );
+
+export const getProfessionalsGetStarted = webMethod(
+  Permissions.Anyone,
+  async (inputId) => {
+    try {
+      const result = await wixData.query("ProfessionalsGetStarted")
+        .include("categories")
+        .include("ageGroups")
+        .include("section3Accordion")
+        .eq("_id", inputId)
+        .find();
+      return result.items;
+    } catch (error) {
+      console.error("getProfessionalsGetStarted error:", error);
+      throw new Error("Failed to fetch professional FAQs.");
+    }
+  }
+);
+
+export const getProfessionalPrograms = webMethod(
+  Permissions.Anyone,
+  async (inputId) => {
+    try {
+      const result = await wixData.query("ProfessionalPrograms")
+        .include("categories")
+        .include("ageGroups")
+        .include("section2Accordion")
+        .eq("_id", inputId)
+        .find();
+      return result.items;
+    } catch (error) {
+      console.error("getProfessionalsGetStarted error:", error);
+      throw new Error("Failed to fetch professional FAQs.");
+    }
+  }
+);
+
